@@ -1,11 +1,9 @@
-from flask import current_app
-
-import base64
-import hashlib
-import hmac
+from datetime import datetime, timedelta
 import json
-from urllib.parse import urlencode
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
+
+from flask import current_app
+import jwt
 
 
 def other_verified_emails(email_address):
@@ -28,14 +26,13 @@ def other_verified_emails(email_address):
     each request with a secret key. The API endpoint will reject our request
     without a valid signature.
     """
-    email = email_address.encode('utf-8')
-    secret = current_app.config['MEMBERSHIP_SECRET_KEY'].encode('utf-8')
-    msg_hmac = hmac.new(secret, email, hashlib.sha256)
-    signed = base64.b64encode(msg_hmac.digest())
+    secret = current_app.config['MEMBERSHIP_SECRET_KEY']
+    expires = datetime.utcnow() + timedelta(minutes=15)
+    token = jwt.encode({'email': email_address, 'exp': expires}, secret)
 
-    qs = urlencode({'email': email, 'signature': signed})
-    url = 'https://mitoc-trips.mit.edu/data/verified_emails?{}'.format(qs)
-    with urlopen(url) as response:
+    request = Request('https://mitoc-trips.mit.edu/data/verified_emails/')
+    request.add_header('Authorization', 'Bearer: {}'.format(token))
+    with urlopen(request) as response:
         data = json.loads(response.read())
 
     return (data['primary'], data['emails'])

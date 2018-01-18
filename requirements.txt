@@ -4,5 +4,6 @@ Flask-MySQL==1.4.0
 itsdangerous==0.24
 Jinja2==2.10
 MarkupSafe==1.0
+PyJWT==1.5.3
 PyMySQL==0.8.0
 Werkzeug==0.14.1
