@@ -2,9 +2,9 @@ from datetime import datetime
 
 from flask import Blueprint, current_app, json, request
 
-from mitoc_member.emails import other_verified_emails
-from mitoc_member.signature import SecureAcceptanceSigner
-from mitoc_member import db
+from member.emails import other_verified_emails
+from member.signature import SecureAcceptanceSigner
+from member import db
 
 blueprint = Blueprint('public', __name__)
 
