@@ -9,7 +9,7 @@ from member import db
 blueprint = Blueprint('public', __name__)
 
 
-@blueprint.route("/membership", methods=["POST"])
+@blueprint.route("/members/membership", methods=["POST"])
 def add_membership():
     """ Process a CyberSource transaction & create/update membership. """
     data = request.form
@@ -43,7 +43,7 @@ def add_membership():
     return json.jsonify(), 201
 
 
-@blueprint.route("/waiver", methods=["POST"])
+@blueprint.route("/members/waiver", methods=["POST"])
 def add_waiver():
     """ Process a DocuSign waiver completion.
 
