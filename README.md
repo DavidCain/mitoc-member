@@ -25,3 +25,11 @@ source env/bin/activate
 pip install -r requirements.txt
 FLASK_APP=autoapp.py flask run
 ```
+
+## Running unit tests
+```bash
+python3 -m venv test_env
+source test_env/bin/activate
+pip install -r requirements-dev.txt
+FLASK_APP=autoapp.py flask test
+```

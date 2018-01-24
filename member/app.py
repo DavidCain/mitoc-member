@@ -3,7 +3,7 @@ import os
 from flask import Flask
 from raven.contrib.flask import Sentry
 
-from member import public
+from member import commands, public
 from member.extensions import mysql
 
 
@@ -19,4 +19,6 @@ def create_app():
     mysql.init_app(app)
     if sentry:
         sentry.init_app(app)
+
+    app.cli.add_command(commands.test)
     return app

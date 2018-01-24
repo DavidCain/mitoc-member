@@ -18,7 +18,11 @@ def add_membership():
 
     secret_key = current_app.config['MEMBERSHIP_SECRET_KEY']
     signature_check = SecureAcceptanceSigner(secret_key)
-    if not signature_check.verify_request(data):
+    try:
+        signature_verified = signature_check.verify_request(data)
+    except ValueError:
+        signature_verified = False
+    if not signature_verified:
         return json.jsonify(), 401
 
     # From the given email, ask the trips database for all their verified emails

@@ -1,0 +1,4 @@
+-r requirements-top-level.txt
+
+# Dev dependencies
+pytest
