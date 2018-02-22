@@ -1,0 +1,730 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DocuSignEnvelopeInformation xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.docusign.net/API/3.0">
+    <EnvelopeStatus>
+        <RecipientStatuses>
+            <RecipientStatus>
+                <Type>
+                    Signer
+                </Type>
+                <Email>
+                    tim@mit.edu
+                </Email>
+                <UserName>
+                    Tim Beaver
+                </UserName>
+                <RoutingOrder>
+                    1
+                </RoutingOrder>
+                <Sent>
+                    2018-02-21T16:28:24.353
+                </Sent>
+                <Delivered>
+                    2018-02-21T16:28:46.567
+                </Delivered>
+                <Signed>
+                    2018-02-21T16:29:07.147
+                </Signed>
+                <DeclineReason xsi:nil="true" />
+                <Status>
+                    Completed
+                </Status>
+                <RecipientIPAddress>
+                    127.0.0.1
+                </RecipientIPAddress>
+                <CustomFields />
+                <TabStatuses>
+                    <TabStatus>
+                        <TabType>
+                            SignHere
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            77
+                        </XPosition>
+                        <YPosition>
+                            1050
+                        </YPosition>
+                        <TabLabel>
+                            Releasor Signature
+                        </TabLabel>
+                        <TabName>
+                            Signature of participant
+                        </TabName>
+                        <TabValue />
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            502
+                        </XPosition>
+                        <YPosition>
+                            1506
+                        </YPosition>
+                        <TabLabel>
+                            Medical Insurance Policy
+                        </TabLabel>
+                        <TabName>
+                            Please supply your medical insurer (e.g. Blue Cross
+                        </TabName>
+                        <TabValue>
+                            Aetna 8675309
+                        </TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <ValidationPattern />
+                        <CustomTabType>
+                            Text
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            150
+                        </XPosition>
+                        <YPosition>
+                            1356
+                        </YPosition>
+                        <TabLabel>
+                            Address
+                        </TabLabel>
+                        <TabName>
+                            Releasor's home address
+                        </TabName>
+                        <TabValue>
+                            742 Evergreen Terrace
+                        </TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <ValidationPattern />
+                        <CustomTabType>
+                            Text
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            245
+                        </XPosition>
+                        <YPosition>
+                            1410
+                        </YPosition>
+                        <TabLabel>
+                            Emergency Contact
+                        </TabLabel>
+                        <TabName>
+                            Name of individual that should be contacted in case of an emergency
+                        </TabName>
+                        <TabValue>
+                            Julius Hibbert
+                        </TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <ValidationPattern />
+                        <CustomTabType>
+                            Text
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            322
+                        </XPosition>
+                        <YPosition>
+                            1460
+                        </YPosition>
+                        <TabLabel>
+                            Emergency Contact Relation
+                        </TabLabel>
+                        <TabName>
+                            (sibling, spouse, parent, etc.)
+                        </TabName>
+                        <TabValue>
+                            Physician
+                        </TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <ValidationPattern />
+                        <CustomTabType>
+                            Text
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            922
+                        </XPosition>
+                        <YPosition>
+                            1456
+                        </YPosition>
+                        <TabLabel>
+                            Emergency Contact's Phone
+                        </TabLabel>
+                        <TabName />
+                        <TabValue>
+                            800-555-1234
+                        </TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <ValidationPattern />
+                        <CustomTabType>
+                            Number
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            735
+                        </XPosition>
+                        <YPosition>
+                            1364
+                        </YPosition>
+                        <TabLabel>
+                            Phone number
+                        </TabLabel>
+                        <TabName>
+                            Releasor's Phone Number
+                        </TabName>
+                        <TabValue>
+                            617-555-1234
+                        </TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <ValidationPattern />
+                        <CustomTabType>
+                            Number
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            1052
+                        </XPosition>
+                        <YPosition>
+                            1572
+                        </YPosition>
+                        <TabLabel>
+                            MIT affiliation
+                        </TabLabel>
+                        <TabName>
+                            Other
+                        </TabName>
+                        <TabValue>
+                            X
+                        </TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <CustomTabType>
+                            Radio
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            FullName
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            70
+                        </XPosition>
+                        <YPosition>
+                            1202
+                        </YPosition>
+                        <TabLabel>
+                            Releasor's Name
+                        </TabLabel>
+                        <TabName />
+                        <TabValue>
+                            Tim Beaver
+                        </TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            DateSigned
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            68
+                        </XPosition>
+                        <YPosition>
+                            1272
+                        </YPosition>
+                        <TabLabel>
+                            Date Signed
+                        </TabLabel>
+                        <TabName>
+                            DateSigned
+                        </TabName>
+                        <TabValue>
+                            2/21/2018 | 7:29 PM EST
+                        </TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            633
+                        </XPosition>
+                        <YPosition>
+                            1570
+                        </YPosition>
+                        <TabLabel>
+                            MIT affiliation
+                        </TabLabel>
+                        <TabName>
+                            MIT graduate student or postdoc
+                        </TabName>
+                        <TabValue />
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <CustomTabType>
+                            Radio
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            433
+                        </XPosition>
+                        <YPosition>
+                            1572
+                        </YPosition>
+                        <TabLabel>
+                            MIT affiliation
+                        </TabLabel>
+                        <TabName>
+                            MIT undergraduate
+                        </TabName>
+                        <TabValue />
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <CustomTabType>
+                            Radio
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            962
+                        </XPosition>
+                        <YPosition>
+                            1570
+                        </YPosition>
+                        <TabLabel>
+                            MIT affiliation
+                        </TabLabel>
+                        <TabName>
+                            MIT alumnus
+                        </TabName>
+                        <TabValue />
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <CustomTabType>
+                            Radio
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>
+                            Custom
+                        </TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            820
+                        </XPosition>
+                        <YPosition>
+                            1575
+                        </YPosition>
+                        <TabLabel>
+                            MIT affiliation
+                        </TabLabel>
+                        <TabName>
+                            MIT faculty or staff
+                        </TabName>
+                        <TabValue />
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                        <CustomTabType>
+                            Radio
+                        </CustomTabType>
+                    </TabStatus>
+                    <TabStatus>
+                        <TabType>EmailAddress</TabType>
+                        <Status>
+                            Signed
+                        </Status>
+                        <XPosition>
+                            595
+                        </XPosition>
+                        <YPosition>
+                            1283
+                        </YPosition>
+                        <TabLabel>Releasor's Email</TabLabel>
+                        <TabName>
+                            EmailAddress
+                        </TabName>
+                        <TabValue>tim@mit.edu</TabValue>
+                        <DocumentID>
+                            1
+                        </DocumentID>
+                        <PageNumber>
+                            1
+                        </PageNumber>
+                    </TabStatus>
+                </TabStatuses>
+                <AccountStatus>
+                    Active
+                </AccountStatus>
+                <FormData>
+                    <xfdf>
+                        <fields>
+                            <field name="Medical Insurance Policy">
+                                <value>
+                                    Aetna 8675309
+                                </value>
+                            </field>
+                            <field name="Address">
+                                <value>
+                                    742 Evergreen Terrace
+                                </value>
+                            </field>
+                            <field name="Emergency Contact">
+                                <value>
+                                    Julius Hibbert
+                                </value>
+                            </field>
+                            <field name="Emergency Contact Relation">
+                                <value>
+                                    Sister
+                                </value>
+                            </field>
+                            <field name="Emergency Contact's Phone">
+                                <value>
+                                    800-555-1234
+                                </value>
+                            </field>
+                            <field name="Phone number">
+                                <value>
+                                    617-555-1234
+                                </value>
+                            </field>
+                            <field name="MIT affiliation">
+                                <value>
+                                    Other
+                                </value>
+                            </field>
+                            <field name="FullName">
+                                <value>
+                                    Tim Beaver
+                                </value>
+                            </field>
+                            <field name="DateSigned">
+                                <value>
+                                    2/21/2018 | 7:29 PM EST
+                                </value>
+                            </field>
+                            <field name="EmailAddress">
+                                <value>
+                                    tim@mit.edu
+                                </value>
+                            </field>
+                        </fields>
+                    </xfdf>
+                </FormData>
+                <RecipientId>
+                    abcdef00-abcd-0123-abcd-012345678901
+                </RecipientId>
+            </RecipientStatus>
+        </RecipientStatuses>
+        <TimeGenerated>
+            2018-02-21T16:29:27.6213956
+        </TimeGenerated>
+        <EnvelopeID>
+            abcdefgh-0123-9999-2222-333333333333
+        </EnvelopeID>
+        <Subject>
+            Please sign the MITOC Liability Waiver
+        </Subject>
+        <UserName>
+            Busy Beaver
+        </UserName>
+        <Email>
+            busy-api-account@example.com
+        </Email>
+        <Status>
+            Completed
+        </Status>
+        <Created>
+            2018-02-21T16:25:36.443
+        </Created>
+        <Sent>
+            2018-02-21T16:28:24.37
+        </Sent>
+        <Delivered>
+            2018-02-21T16:28:46.707
+        </Delivered>
+        <Signed>
+            2018-02-21T16:29:07.147
+        </Signed>
+        <Completed>
+            2018-02-21T16:29:07.147
+        </Completed>
+        <ACStatus>
+            Original
+        </ACStatus>
+        <ACStatusDate>
+            2018-02-21T16:25:36.443
+        </ACStatusDate>
+        <ACHolder>
+            Busy Beaver
+        </ACHolder>
+        <ACHolderEmail>
+            busy-api-account@example.com
+        </ACHolderEmail>
+        <ACHolderLocation>
+            DocuSign
+        </ACHolderLocation>
+        <SigningLocation>
+            Online
+        </SigningLocation>
+        <SenderIPAddress>
+            127.0.0.1
+        </SenderIPAddress>
+        <EnvelopePDFHash />
+        <CustomFields>
+            <CustomField>
+                <Name>
+                    Enter Sender Name
+                </Name>
+                <Show>
+                    True
+                </Show>
+                <Required>
+                    True
+                </Required>
+                <Value>
+                    mitoc-owner@mit.edu
+                </Value>
+            </CustomField>
+            <CustomField>
+                <Name>
+                    AccountId
+                </Name>
+                <Show>
+                    false
+                </Show>
+                <Required>
+                    false
+                </Required>
+                <Value>
+                    774744
+                </Value>
+                <CustomFieldType>
+                    Text
+                </CustomFieldType>
+            </CustomField>
+            <CustomField>
+                <Name>
+                    AccountName
+                </Name>
+                <Show>
+                    false
+                </Show>
+                <Required>
+                    false
+                </Required>
+                <Value>
+                    MIT Demo
+                </Value>
+                <CustomFieldType>
+                    Text
+                </CustomFieldType>
+            </CustomField>
+            <CustomField>
+                <Name>
+                    AccountSite
+                </Name>
+                <Show>
+                    false
+                </Show>
+                <Required>
+                    false
+                </Required>
+                <Value>
+                    demo
+                </Value>
+                <CustomFieldType>
+                    Text
+                </CustomFieldType>
+            </CustomField>
+        </CustomFields>
+        <AutoNavigation>
+            true
+        </AutoNavigation>
+        <EnvelopeIdStamping>
+            true
+        </EnvelopeIdStamping>
+        <AuthoritativeCopy>
+            false
+        </AuthoritativeCopy>
+        <DocumentStatuses>
+            <DocumentStatus>
+                <ID>
+                    1
+                </ID>
+                <Name>
+                    Liability Waiver.pdf
+                </Name>
+                <TemplateName>
+                    MITOC Liability Waiver
+                </TemplateName>
+                <Sequence>
+                    1
+                </Sequence>
+            </DocumentStatus>
+        </DocumentStatuses>
+    </EnvelopeStatus>
+    <DocumentPDFs>
+        <DocumentPDF>
+            <Name>
+                Liability Waiver.pdf
+            </Name>
+            <DocumentID>
+                1
+            </DocumentID>
+            <DocumentType>
+                CONTENT
+            </DocumentType>
+        </DocumentPDF>
+        <DocumentPDF>
+            <Name>
+                CertificateOfCompletion_01234567-0000-1111-1111-eeeeeeeeeeee.pdf
+            </Name>
+            <DocumentType>
+                SUMMARY
+            </DocumentType>
+        </DocumentPDF>
+    </DocumentPDFs>
+    <TimeZone>
+        Pacific Standard Time
+    </TimeZone>
+    <TimeZoneOffset>
+        -8
+    </TimeZoneOffset>
+</DocuSignEnvelopeInformation>
