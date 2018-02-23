@@ -46,6 +46,20 @@ def add_membership(person_id, price_paid, datetime_paid):
     return cursor.fetchone()[0]
 
 
+def add_waiver(person_id, datetime_signed):
+    cursor = mysql.connect().cursor()
+    cursor.execute(
+        '''
+        insert into people_waivers
+               (person_id, date_signed, expires)
+        values (%(person_id)s, %(datetime_signed)s,
+                date_add(%(datetime_signed)s, interval 1 year))
+        ''', {'person_id': person_id,
+              'datetime_signed': datetime_signed}
+    )
+    return cursor.lastrowid
+
+
 def already_added_waiver(person_id, date_signed):
     """ Return if this person already has a waiver on this date.
 
@@ -61,7 +75,7 @@ def already_added_waiver(person_id, date_signed):
             from people_waivers
            -- date_signed is actually a timestamp
            where person_id = %(person_id)s
-             and date(date_signed) = %(date_signed)s
+             and date(date_signed) = date(%(date_signed)s)
         ) as already_inserted
         ''', {'person_id': person_id, 'date_signed': date_signed}
     )

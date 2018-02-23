@@ -2,6 +2,7 @@ from datetime import datetime
 
 from flask import Blueprint, current_app, json, request
 
+from member.envelopes import CompletedEnvelope
 from member.emails import other_verified_emails
 from member.signature import SecureAcceptanceSigner
 from member import db
@@ -51,5 +52,28 @@ def add_membership():
 def add_waiver():
     """ Process a DocuSign waiver completion.
 
-    Currently, MITOC memberships are all processed through RightSignature. """
+    NOTE: It's extremely important that there be some access control behind
+    this route. It parses XML directly, so it must come from a trusted source
+    (the xml library is vulnerable to the 'billion laughs' and quadratic blowup
+    vulnerabilities). Obviously, this route also inserts rows into a database,
+    so we should only be doing that based on verified information.
+
+    DocuSign event notifications are signed with their X.509 certificate, which
+    should be verified with NGINX, Apache, or similar before being forwarded to
+    this route.
+    """
+    env = CompletedEnvelope(request.data)
+    email, time_signed = env.releasor_email, env.time_signed
+
+    primary, all_emails = other_verified_emails(email)
+    person_id = db.person_to_update(primary, all_emails)
+    if not person_id:
+        return json.jsonify()
+        # NOTE: We should create a person, assign them the affiliation given in the doc
+        # (first_name and last_name are not currently implemented)
+        person_id = db.add_person(env.first_name, env.last_name, primary)
+
+    if not db.already_added_waiver(person_id, time_signed):
+        db.add_waiver(person_id, time_signed)
+
     return json.jsonify()
