@@ -29,9 +29,10 @@ def other_verified_emails(email_address):
     secret = current_app.config['MEMBERSHIP_SECRET_KEY']
     expires = datetime.utcnow() + timedelta(minutes=15)
     token = jwt.encode({'email': email_address, 'exp': expires}, secret)
+    bearer = 'Bearer: {}'.format(token.decode('UTF-8'))
 
     request = Request('https://mitoc-trips.mit.edu/data/verified_emails/')
-    request.add_header('Authorization', 'Bearer: {}'.format(token))
+    request.add_header('Authorization', bearer)
     with urlopen(request) as response:
         data = json.loads(response.read())
 
