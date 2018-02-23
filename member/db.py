@@ -1,4 +1,17 @@
 from .extensions import mysql
+from flask import _app_ctx_stack
+
+
+def get_db():
+    """ Opens a new connection if not already in current app context. """
+    top = _app_ctx_stack.top
+    if not hasattr(top, 'conn'):
+        top.conn = mysql.connect()
+    return top.conn
+
+
+def commit():
+    get_db().commit()
 
 
 def get_affiliation(amount):
@@ -13,7 +26,7 @@ def add_person(first, last, email):
     This is only to be done when we cannot find an existing membership
     under any known email addresses.
     """
-    cursor = mysql.connect().cursor()
+    cursor = get_db().cursor()
     cursor.execute(
         '''
         -- Omitted columns (left `null`):
@@ -29,7 +42,7 @@ def add_person(first, last, email):
 
 def add_membership(person_id, price_paid, datetime_paid):
     """ Add a membership payment for an existing MITOC member. """
-    cursor = mysql.connect().cursor()
+    cursor = get_db().cursor()
     cursor.execute(
         '''
         insert into people_memberships
@@ -45,7 +58,7 @@ def add_membership(person_id, price_paid, datetime_paid):
 
 
 def add_waiver(person_id, datetime_signed):
-    cursor = mysql.connect().cursor()
+    cursor = get_db().cursor()
     cursor.execute(
         '''
         insert into people_waivers
@@ -65,7 +78,7 @@ def already_added_waiver(person_id, date_signed):
     signs the waiver twico in one day, it doesn't matter if we insert another
     record.
     """
-    cursor = mysql.connect().cursor()
+    cursor = get_db().cursor()
     cursor.execute(
         '''
         select exists(
@@ -86,7 +99,7 @@ def already_inserted_membership(person_id, date_effective):
     We don't use date_inserted since we could have manually added in a
     membership with a different date.
     """
-    cursor = mysql.connect().cursor()
+    cursor = get_db().cursor()
     cursor.execute(
         '''
         select exists(
@@ -106,7 +119,7 @@ def person_to_update(primary_email, all_emails):
     In the future, we should employ automatic merging of accounts so
     that this logic isn't very necessary.
     """
-    cursor = mysql.connect().cursor()
+    cursor = get_db().cursor()
     cursor.execute(
         '''
         select t.id

@@ -43,6 +43,7 @@ def add_membership():
 
     datetime_paid = datetime.strptime(data['signed_date_time'], "%Y-%m-%dT%H:%M:%SZ")
     db.add_membership(person_id, data['req_amount'], datetime_paid)
+    db.commit()
 
     # TODO: Consider firing off an alert if duplicate memberships were detected
     return json.jsonify(), 201
@@ -75,5 +76,6 @@ def add_waiver():
 
     if not db.already_added_waiver(person_id, time_signed):
         db.add_waiver(person_id, time_signed)
+    db.commit()
 
     return json.jsonify()
