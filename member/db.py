@@ -22,10 +22,9 @@ def add_person(first, last, email):
         -- * city & state: we've historically not bothered tracking
         insert into people (firstname, lastname, email, date_inserted)
         values (%(first)s, %(last)s, %(email)s, now())
-        returning id
         ''', {'first': first, 'last': last, 'email': email}
     )
-    return cursor.fetchone()[0]
+    return cursor.lastrowid
 
 
 def add_membership(person_id, price_paid, datetime_paid):
@@ -37,13 +36,12 @@ def add_membership(person_id, price_paid, datetime_paid):
                (person_id, price_paid, affiliation, date_inserted, expires)
         values (%(person_id)s, %(price_paid)s, %(affiliation)s, now(),
                 date_add(%(datetime_paid)s, interval 1 year))
-        returning id
         ''', {'person_id': person_id,
               'price_paid': price_paid,
               'affiliation': get_affiliation(price_paid),
               'datetime_paid': datetime_paid}
     )
-    return cursor.fetchone()[0]
+    return cursor.lastrowid
 
 
 def add_waiver(person_id, datetime_signed):
