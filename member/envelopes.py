@@ -7,15 +7,13 @@ from datetime import datetime, timezone, timedelta
 import xml.etree.ElementTree as ET
 
 
-class CompletedEnvelope:
+class DocuSignDocumentHelpers:
+    """ Generic helpers for use in parsing any DocuSign XML document. """
     ns = {'docu': "http://www.docusign.net/API/3.0"}
     recipient_status = ['EnvelopeStatus', 'RecipientStatuses', 'RecipientStatus']
 
     def __init__(self, xml_contents):
         self.root = ET.fromstring(xml_contents)
-        tag = '{%s}DocuSignEnvelopeInformation' % self.ns['docu']
-        if self.root.tag != tag:
-            raise ValueError("Expected {} as root element".format(tag))
 
     def get_element(self, hierarchy, findall=False):
         """ Return a single element from an array of XPath selectors. """
@@ -30,6 +28,24 @@ class CompletedEnvelope:
 
     def _get_hours_offset(self):
         return self.get_val(['TimeZoneOffset'])
+
+    def _to_utc(self, datetime_string):
+        """ Convert datetimes from the document to UTC based on the supplied TZ. """
+        hours_offset = int(self._get_hours_offset())
+        ts = datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S.%f")
+
+        utc_datetime = ts - timedelta(hours=hours_offset)
+        return utc_datetime.replace(tzinfo=timezone.utc)
+
+
+class CompletedEnvelope(DocuSignDocumentHelpers):
+    """ Navigate a DocuSignEnvelopeInformation resource (completed waiver). """
+    def __init__(self, xml_contents):
+        """ Error out early if it's the unexpected document type. """
+        super().__init__(xml_contents)
+        tag = '{%s}DocuSignEnvelopeInformation' % self.ns['docu']
+        if self.root.tag != tag:
+            raise ValueError("Expected {} as root element".format(tag))
 
     def _first_and_last(self):
         """ A tuple that always contains the last name, and sometimes the last.
@@ -53,17 +69,21 @@ class CompletedEnvelope:
             return ''
 
     @property
+    def completed(self):
+        """ Return if all recipients have completed this envelope.
+
+        (It's possible for a user to have completed their part, but the waiver
+        is still awaiting a guardian's signature).
+        """
+        return self.get_val(['EnvelopeStatus', 'Status']) == 'Completed'
+
+    @property
     def time_signed(self):
         """ Return the timestamp when the document was signed. """
-        time_signed = self.get_val(self.recipient_status + ['Signed'])
-        try:
-            hours_offset = int(self._get_hours_offset())
-            ts = datetime.strptime(time_signed, "%Y-%m-%dT%H:%M:%S.%f")
-        except ValueError:
-            return datetime.utcnow()
-        else:
-            utc_datetime = ts - timedelta(hours=hours_offset)
-            return utc_datetime.replace(tzinfo=timezone.utc)
+        if not self.completed:
+            raise ValueError("Incompleted documents are not signed!")
+        time_signed = self.get_val(['EnvelopeStatus', 'Completed'])
+        return self._to_utc(time_signed)
 
     @property
     def releasor_email(self):

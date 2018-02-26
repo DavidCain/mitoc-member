@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import unittest
 from unittest.mock import patch, PropertyMock
 from pathlib import Path
@@ -9,13 +9,13 @@ from member import envelopes
 dir_path = Path(__file__).resolve().parent
 
 
-class ParserTests(unittest.TestCase):
+class EnvelopeLoader:
     def load_envelope(self, filename='completed_waiver.xml'):
         example_xml = dir_path / filename
         self.env = envelopes.CompletedEnvelope(example_xml.open().read())
 
 
-class TestNameSplitting(ParserTests):
+class TestNameSplitting(EnvelopeLoader, unittest.TestCase):
     @contextmanager
     def username(self, value):
         releasor_name = 'member.envelopes.CompletedEnvelope.releasor_name'
@@ -73,9 +73,10 @@ class TestExpectedDocumentType(unittest.TestCase):
             envelopes.CompletedEnvelope(bad_xml)
 
 
-class TestWaiverParser(ParserTests):
+class TestWaiverParser(EnvelopeLoader, unittest.TestCase):
     def setUp(self):
         self.load_envelope()
+        self.assertTrue(self.env.completed)
 
     def test_time_signed(self):
         """ The time signed is parsed & converted to UTC. """
@@ -97,18 +98,6 @@ class TestWaiverParser(ParserTests):
         hours_offset.return_value = '-5'
         self.assertEqual(datetime(2018, 2, 21, 21, 29, 7, 147000),
                          self.env.time_signed.replace(tzinfo=None))
-
-    @patch('member.envelopes.CompletedEnvelope.get_val')
-    def test_fallback_on_utc_now(self, get_val):
-        """ If we fail to parse the time signed, we fall back on current time.
-
-        In most cases, we can assume that the time we receive a completed envelope
-        is pretty close to when the envelope was actually completed.
-        """
-        get_val.return_value = 'Some invalid time'
-        now_diff = datetime.utcnow() - self.env.time_signed
-        self.assertLess(abs(now_diff), timedelta(seconds=1))
-        get_val.assert_called()
 
     def test_releasor_email(self):
         """ The releasor's email is parsed out. """

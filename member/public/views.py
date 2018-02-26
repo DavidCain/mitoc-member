@@ -64,6 +64,9 @@ def add_waiver():
     this route.
     """
     env = CompletedEnvelope(request.data)
+    if not env.completed:
+        return json.jsonify()  # Still awaiting guardian's signature
+
     email, time_signed = env.releasor_email, env.time_signed
 
     primary, all_emails = other_verified_emails(email)
