@@ -85,24 +85,35 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
         time_signed = self.get_val(['EnvelopeStatus', 'Completed'])
         return self._to_utc(time_signed)
 
+    def _all_tab_statuses(self):
+        """ Yield the label and value for all tab statuses in the document.
+
+        This method is complicated by the fact that:
+        - a self-closing tab actually has None as its value for .text
+        - ET elements are somehow _falsy_ - we must explicitly compare to None
+        """
+        selector = self.recipient_status + ['TabStatuses', 'TabStatus']
+        for tab in self.get_element(selector, findall=True):
+            label = tab.find('docu:TabLabel', self.ns).text.strip()
+            tab_value = tab.find('docu:TabValue', self.ns)
+            value = None if tab_value is None else tab_value.text
+            yield label, (value and value.strip())
+
+    def tab_status(self, desired_label):
+        """ Return the value for a specific tab status.
+
+        ElementTree has rudimentary support for XPath, so we use a simple
+        iterable instead.
+        """
+        for label, value in self._all_tab_statuses():
+            if label == desired_label:
+                return value
+        raise ValueError("Missing {}!".format(desired_label))
+
     @property
     def releasor_email(self):
-        selector = self.recipient_status + ['TabStatuses', 'TabStatus']
-        tab_statuses = self.get_element(selector, findall=True)
-        for tab in tab_statuses:
-            label = tab.find('docu:TabLabel', self.ns)
-            if label is not None and label.text.strip() == "Releasor's Email":
-                return tab.find('docu:TabValue', self.ns).text.strip()
-        else:
-            raise ValueError("Missing releasor email!")
+        return self.tab_status("Releasor's Email")
 
     @property
     def releasor_name(self):
-        selector = self.recipient_status + ['TabStatuses', 'TabStatus']
-        tab_statuses = self.get_element(selector, findall=True)
-        for tab in tab_statuses:
-            label = tab.find('docu:TabLabel', self.ns)
-            if label is not None and label.text.strip() == "Releasor's Name":
-                return tab.find('docu:TabValue', self.ns).text.strip()
-        else:
-            raise ValueError("Missing releasor's name!")
+        return self.tab_status("Releasor's Name")
