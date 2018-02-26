@@ -50,6 +50,29 @@ class TestNameSplitting(ParserTests):
             self.assertEqual(self.env.last_name, 'Toomanyspaces')
 
 
+class TestExpectedDocumentType(unittest.TestCase):
+    def test_root_element_okay(self):
+        """ No errors occur when initializing the right root element type. """
+        valid_xml = '''<?xml version="1.0" encoding="utf-8" ?>
+            <DocuSignEnvelopeInformation xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                         xmlns="http://www.docusign.net/API/3.0">
+              <EnvelopeStatus></EnvelopeStatus>
+            </DocuSignEnvelopeInformation>
+        '''
+        envelopes.CompletedEnvelope(valid_xml)
+
+    def test_early_failure(self):
+        """ Fail early when passed the wrong XML. """
+        bad_xml = '''<?xml version="1.0" encoding="utf-8" ?>
+            <WrongRootElement>
+            <UserName>Bob</UserName>
+            </WrongRootElement>
+        '''
+        with self.assertRaises(ValueError):
+            envelopes.CompletedEnvelope(bad_xml)
+
+
 class TestWaiverParser(ParserTests):
     def setUp(self):
         self.load_envelope()

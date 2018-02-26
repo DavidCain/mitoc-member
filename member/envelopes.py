@@ -13,6 +13,9 @@ class CompletedEnvelope:
 
     def __init__(self, xml_contents):
         self.root = ET.fromstring(xml_contents)
+        tag = '{%s}DocuSignEnvelopeInformation' % self.ns['docu']
+        if self.root.tag != tag:
+            raise ValueError("Expected {} as root element".format(tag))
 
     def get_element(self, hierarchy, findall=False):
         """ Return a single element from an array of XPath selectors. """
