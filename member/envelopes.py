@@ -28,6 +28,27 @@ class CompletedEnvelope:
     def _get_hours_offset(self):
         return self.get_val(['TimeZoneOffset'])
 
+    def _first_and_last(self):
+        """ A tuple that always contains the last name, and sometimes the last.
+
+        If there's no spacing given in the name, we just assume that the user
+        only reported their first name, and no last name.
+        """
+        return self.releasor_name.split(None, 1)
+
+    @property
+    def first_name(self):
+        """ First name of the MITOC member this waiver is for. """
+        return self._first_and_last()[0]
+
+    @property
+    def last_name(self):
+        """ Last name of the MITOC member this waiver is for. """
+        try:
+            return self._first_and_last()[1]
+        except IndexError:  # No space given, we don't know the last name
+            return ''
+
     @property
     def time_signed(self):
         """ Return the timestamp when the document was signed. """
@@ -51,3 +72,14 @@ class CompletedEnvelope:
                 return tab.find('docu:TabValue', self.ns).text.strip()
         else:
             raise ValueError("Missing releasor email!")
+
+    @property
+    def releasor_name(self):
+        selector = self.recipient_status + ['TabStatuses', 'TabStatus']
+        tab_statuses = self.get_element(selector, findall=True)
+        for tab in tab_statuses:
+            label = tab.find('docu:TabLabel', self.ns)
+            if label is not None and label.text.strip() == "Releasor's Name":
+                return tab.find('docu:TabValue', self.ns).text.strip()
+        else:
+            raise ValueError("Missing releasor's name!")

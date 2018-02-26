@@ -69,9 +69,6 @@ def add_waiver():
     primary, all_emails = other_verified_emails(email)
     person_id = db.person_to_update(primary, all_emails)
     if not person_id:
-        return json.jsonify()
-        # NOTE: We should create a person, assign them the affiliation given in the doc
-        # (first_name and last_name are not currently implemented)
         person_id = db.add_person(env.first_name, env.last_name, primary)
 
     if not db.already_added_waiver(person_id, time_signed):
