@@ -17,7 +17,7 @@ def add_membership():
     if data['req_merchant_defined_data1'] != 'membership':
         return json.jsonify(), 204  # Some other payment, we don't care
 
-    secret_key = current_app.config['MEMBERSHIP_SECRET_KEY']
+    secret_key = current_app.config['CYBERSOURCE_SECRET_KEY']
     signature_check = SecureAcceptanceSigner(secret_key)
     try:
         signature_verified = signature_check.verify_request(data)

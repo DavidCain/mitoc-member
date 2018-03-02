@@ -9,7 +9,7 @@ class TestMembershipView(unittest.TestCase):
     def setUp(self):
         self.app = create_app()
         self.client = self.app.test_client()
-        self.app.config['MEMBERSHIP_SECRET_KEY'] = 'secret-key'
+        self.app.config['CYBERSOURCE_SECRET_KEY'] = 'secret-key'
 
     def test_non_membership_transactions_ignored(self):
         """ Any CyberSource transaction not for membership is ignored. """
@@ -23,7 +23,6 @@ class TestMembershipView(unittest.TestCase):
 
     def test_no_signed_field_names(self):
         """ When 'signed_field_names' is absent, a 401 is returned. """
-        self.app.config['MEMBERSHIP_SECRET_KEY'] = 'secret-key'
         response = self.client.post('/members/membership', data={
             'req_merchant_defined_data1': 'membership',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
@@ -34,7 +33,6 @@ class TestMembershipView(unittest.TestCase):
 
     def test_invalid_signature(self):
         """ We 401 when signed names are present, but signature is invalid. """
-        self.app.config['MEMBERSHIP_SECRET_KEY'] = 'secret-key'
         response = self.client.post('/members/membership', data={
             'req_merchant_defined_data1': 'membership',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
