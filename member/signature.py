@@ -6,6 +6,15 @@ import hashlib
 import hmac
 
 
+def signature_valid(data, secret_key):
+    signature_check = SecureAcceptanceSigner(secret_key)
+    try:
+        signature_verified = signature_check.verify_request(data)
+    except ValueError:
+        signature_verified = False
+    return signature_verified
+
+
 class SecureAcceptanceSigner:
     def __init__(self, secret_key):
         self.secret_key = secret_key

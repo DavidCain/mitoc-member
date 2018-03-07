@@ -4,7 +4,7 @@ from flask import Blueprint, current_app, json, request
 
 from member.envelopes import CompletedEnvelope
 from member.emails import other_verified_emails
-from member.signature import SecureAcceptanceSigner
+from member.signature import signature_valid
 from member import db
 
 blueprint = Blueprint('public', __name__)
@@ -17,14 +17,12 @@ def add_membership():
     if data['req_merchant_defined_data1'] != 'membership':
         return json.jsonify(), 204  # Some other payment, we don't care
 
-    secret_key = current_app.config['CYBERSOURCE_SECRET_KEY']
-    signature_check = SecureAcceptanceSigner(secret_key)
-    try:
-        signature_verified = signature_check.verify_request(data)
-    except ValueError:
-        signature_verified = False
-    if not signature_verified:
-        return json.jsonify(), 401
+    # If we lack the secret key to verify signatures, we can rely on the web
+    # server itself to provide access control (and skip signature verification)
+    if current_app.config['VERIFY_CYBERSOURCE_SIGNATURE']:
+        secret_key = current_app.config['CYBERSOURCE_SECRET_KEY']
+        if not signature_valid(data, secret_key):
+            return json.jsonify(), 401
 
     # From the given email, ask the trips database for all their verified emails
     email = data['req_merchant_defined_data3']  # NOT req_bill_to_email
