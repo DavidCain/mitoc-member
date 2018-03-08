@@ -48,7 +48,7 @@ def add_membership(person_id, price_paid, datetime_paid):
         insert into people_memberships
                (person_id, price_paid, membership_type, date_inserted, expires)
         values (%(person_id)s, %(price_paid)s, %(membership_type)s, now(),
-                date_add(%(datetime_paid)s, interval 1 year))
+                date(date_add(%(datetime_paid)s, interval 1 year)))
         ''', {'person_id': person_id,
               'price_paid': price_paid,
               'membership_type': get_affiliation(price_paid),
@@ -106,7 +106,7 @@ def already_inserted_membership(person_id, date_effective):
           select 1
             from people_memberships
            where person_id = %(person_id)s
-             and expires = date_add(%(date_effective)s, interval 1 year)
+             and expires = date(date_add(%(date_effective)s, interval 1 year))
         ) as already_inserted
         ''', {'person_id': person_id, 'date_effective': date_effective}
     )
