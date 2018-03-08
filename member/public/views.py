@@ -14,6 +14,8 @@ blueprint = Blueprint('public', __name__)
 def add_membership():
     """ Process a CyberSource transaction & create/update membership. """
     data = request.form
+    if data['decision'] != 'ACCEPT':
+        return json.jsonify(), 204  # Transaction canceled, declined, etc.
     if data['req_merchant_defined_data1'] != 'membership':
         return json.jsonify(), 204  # Some other payment, we don't care
 
