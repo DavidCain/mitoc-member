@@ -33,8 +33,8 @@ def add_person(first, last, email):
         -- * phone: Tracked by mitoc-trips, and CyberSource only gives the billing phone
         -- * affiliation: better tracked by people_memberships OR by mitoc-trips
         -- * city & state: we've historically not bothered tracking
-        insert into people (firstname, lastname, email, date_inserted)
-        values (%(first)s, %(last)s, %(email)s, now())
+        insert into people (firstname, lastname, email, desk_credit, date_inserted)
+        values (%(first)s, %(last)s, %(email)s, 0, now())
         ''', {'first': first, 'last': last, 'email': email}
     )
     return cursor.lastrowid
