@@ -28,9 +28,12 @@ def add_membership():
     email = data['req_merchant_defined_data3']  # NOT req_bill_to_email
     primary, all_emails = other_verified_emails(email)
 
+    # Identify datetime (in UTC) when the transaction was completed
+    dt_paid = datetime.strptime(data['signed_date_time'], "%Y-%m-%dT%H:%M:%SZ")
+
     # Fetch membership, ideally for primary email, but otherwise most recent
     person_id = db.person_to_update(primary, all_emails)
-    if person_id and db.already_inserted_membership(person_id):
+    if person_id and db.already_inserted_membership(person_id, dt_paid):
         return json.jsonify(), 202  # Most likely already processed
 
     # If no membership exists, create one under the primary email
@@ -39,8 +42,7 @@ def add_membership():
         last_name = data['req_bill_to_surname']
         person_id = db.add_person(first_name, last_name, primary)
 
-    datetime_paid = datetime.strptime(data['signed_date_time'], "%Y-%m-%dT%H:%M:%SZ")
-    db.add_membership(person_id, data['req_amount'], datetime_paid)
+    db.add_membership(person_id, data['req_amount'], dt_paid)
     db.commit()
 
     # TODO: Consider firing off an alert if duplicate memberships were detected
