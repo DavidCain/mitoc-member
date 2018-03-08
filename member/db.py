@@ -46,12 +46,12 @@ def add_membership(person_id, price_paid, datetime_paid):
     cursor.execute(
         '''
         insert into people_memberships
-               (person_id, price_paid, affiliation, date_inserted, expires)
-        values (%(person_id)s, %(price_paid)s, %(affiliation)s, now(),
+               (person_id, price_paid, membership_type, date_inserted, expires)
+        values (%(person_id)s, %(price_paid)s, %(membership_type)s, now(),
                 date_add(%(datetime_paid)s, interval 1 year))
         ''', {'person_id': person_id,
               'price_paid': price_paid,
-              'affiliation': get_affiliation(price_paid),
+              'membership_type': get_affiliation(price_paid),
               'datetime_paid': datetime_paid}
     )
     return cursor.lastrowid
