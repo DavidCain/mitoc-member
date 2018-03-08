@@ -1,7 +1,10 @@
+from distutils.util import strtobool
 import os
 
 
-VERIFY_CYBERSOURCE_SIGNATURE = os.getenv('VERIFY_CYBERSOURCE_SIGNATURE', True)
+verify = os.getenv('VERIFY_CYBERSOURCE_SIGNATURE', 'true')
+VERIFY_CYBERSOURCE_SIGNATURE = strtobool(verify)
+
 CYBERSOURCE_SECRET_KEY = os.getenv('CYBERSOURCE_SECRET_KEY',
                                    'Secret key used to sign CyberSource')
 
