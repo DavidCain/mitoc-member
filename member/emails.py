@@ -1,9 +1,7 @@
-from datetime import datetime, timedelta
 import json
 from urllib.request import Request, urlopen
 
-from flask import current_app
-import jwt
+from member.trips_api import bearer_jwt
 
 
 def other_verified_emails(email_address):
@@ -26,13 +24,8 @@ def other_verified_emails(email_address):
     each request with a secret key. The API endpoint will reject our request
     without a valid signature.
     """
-    secret = current_app.config['MEMBERSHIP_SECRET_KEY']
-    expires = datetime.utcnow() + timedelta(minutes=15)
-    token = jwt.encode({'email': email_address, 'exp': expires}, secret)
-    bearer = 'Bearer: {}'.format(token.decode('UTF-8'))
-
     request = Request('https://mitoc-trips.mit.edu/data/verified_emails/')
-    request.add_header('Authorization', bearer)
+    request.add_header('Authorization', bearer_jwt(email=email_address))
     with urlopen(request) as response:
         data = json.loads(response.read())
 
