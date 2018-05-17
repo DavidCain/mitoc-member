@@ -54,7 +54,17 @@ def add_membership(person_id, price_paid, datetime_paid):
               'membership_type': get_affiliation(price_paid),
               'datetime_paid': datetime_paid}
     )
-    return cursor.lastrowid
+
+    # MySQL doesn't support `returning` :(
+    cursor.execute(
+        '''
+        select id, expires
+          from people_memberships
+         where id = %(membership_id)s
+        ''', {'membership_id': cursor.lastrowid}
+    )
+    membership_id, date_expires = cursor.fetchone()
+    return membership_id, date_expires
 
 
 def add_waiver(person_id, datetime_signed):
@@ -68,7 +78,17 @@ def add_waiver(person_id, datetime_signed):
         ''', {'person_id': person_id,
               'datetime_signed': datetime_signed}
     )
-    return cursor.lastrowid
+
+    # MySQL doesn't support `returning` :(
+    cursor.execute(
+        '''
+        select id, date(expires)
+          from people_waivers
+         where id = %(waiver_id)s
+        ''', {'waiver_id': cursor.lastrowid}
+    )
+    waiver_id, date_expires = cursor.fetchone()
+    return waiver_id, date_expires
 
 
 def already_added_waiver(person_id, date_signed):
