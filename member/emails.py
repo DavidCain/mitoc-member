@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from urllib.request import Request, urlopen
 
@@ -30,3 +31,30 @@ def other_verified_emails(email_address):
         data = json.loads(response.read())
 
     return (data['primary'], data['emails'])
+
+
+def update_membership(email_address, membership_expires=None, waiver_expires=None):
+    """ Inform mitoc-trips that a waiver or membership has been processed.
+
+    MITOC Trips maintains its own cache of when a participant's waiver and/or
+    membership will expire. Because this data changes rarely, it's more
+    efficient to cache expiration dates locally. However, when this system receives
+    a new waiver or membership, we should inform the system that the cache is now
+    invalid, and that it should be updated.
+    """
+    request = Request('https://mitoc-trips.mit.edu/data/membership/', method='POST')
+
+    payload = {'email': email_address}
+
+    def format_date(dt):
+        """ Format the date from a datetime OR date object in ISO-8601. """
+        return datetime.strftime(dt, '%Y-%m-%d')  # isoformat() only works on date
+
+    if membership_expires:
+        payload['membership_expires'] = format_date(membership_expires)
+    if waiver_expires:
+        payload['waiver_expires'] = format_date(waiver_expires)
+
+    request.add_header('Authorization', bearer_jwt(**payload))
+    with urlopen(request) as response:
+        return json.loads(response.read())
