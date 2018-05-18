@@ -1,14 +1,7 @@
-import os
-
 from flask import Flask, _app_ctx_stack
-from raven.contrib.flask import Sentry
 
 from member import commands, public
-from member.extensions import mysql
-
-
-RAVEN_DSN = os.getenv('RAVEN_DSN')
-sentry = Sentry(dsn=RAVEN_DSN) if RAVEN_DSN else None
+from member.extensions import mysql, sentry
 
 
 def create_app():
