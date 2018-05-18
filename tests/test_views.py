@@ -14,10 +14,16 @@ def cybersource_now():
 
 class MembershipViewTests(unittest.TestCase):
     def setUp(self):
+        self.db_patcher = unittest.mock.patch('member.public.views.db')
+        self.db = self.db_patcher.start()
+
         self.app = create_app()
         self.client = self.app.test_client()
         self.app.config['CYBERSOURCE_SECRET_KEY'] = 'secret-key'
         self.signer = SecureAcceptanceSigner('secret-key')
+
+    def tearDown(self):
+        self.db_patcher.stop()
 
 
 class TestSignaturesInMembershipView(MembershipViewTests):
@@ -52,17 +58,16 @@ class TestSignaturesInMembershipView(MembershipViewTests):
         response = self.client.post('/members/membership', data=payload)
         self.assertEqual(response.status_code, 401)
 
-    @unittest.mock.patch('member.public.views.db')
     @unittest.mock.patch('member.public.views.other_verified_emails')
-    def test_valid_signature(self, verified_emails, db):
+    def test_valid_signature(self, verified_emails):
         """ When a valid signature is included, the route succeeds. """
         all_emails = ['mitoc-member@example.com']
         verified_emails.return_value = ('mitoc-member@example.com', all_emails)
 
         # There's already a person_id in the database for this person,
         # but the record has not yet been processed
-        db.person_to_update.return_value = 62
-        db.already_inserted_membership.return_value = False
+        self.db.person_to_update.return_value = 62
+        self.db.already_inserted_membership.return_value = False
 
         response = self.client.post('/members/membership', data=self.valid_payload)
         self.assertEqual(response.status_code, 201)
@@ -127,9 +132,8 @@ class TestMembershipView(MembershipViewTests):
         })
         self.assertEqual(response.status_code, 204)
 
-    @unittest.mock.patch('member.public.views.db')
     @unittest.mock.patch('member.public.views.other_verified_emails')
-    def test_duplicate_requests_handled(self, verified_emails, db):
+    def test_duplicate_requests_handled(self, verified_emails):
         """ Test idempotency of the membership route.
 
         When the same membership transaction is POSTed to the API, we don't
@@ -141,8 +145,8 @@ class TestMembershipView(MembershipViewTests):
 
         # There's already a person_id in the database for this person,
         # and this particular membership record was already inserted
-        db.person_to_update.return_value = 62
-        db.already_inserted_membership.return_value = True
+        self.db.person_to_update.return_value = 62
+        self.db.already_inserted_membership.return_value = True
 
         # We submit a valid signature for a membership, but get a 202:
         # the membership has already been processed
@@ -153,12 +157,11 @@ class TestMembershipView(MembershipViewTests):
         })
         self.assertEqual(response.status_code, 202)
 
-        db.add_person.assert_not_called()
-        db.add_membership.assert_not_called()
+        self.db.add_person.assert_not_called()
+        self.db.add_membership.assert_not_called()
 
-    @unittest.mock.patch('member.public.views.db')
     @unittest.mock.patch('member.public.views.other_verified_emails')
-    def test_update_membership(self, verified_emails, db):
+    def test_update_membership(self, verified_emails):
         """ Updating an existing membership works. """
         # The Trips web site gives all emails that we use to look up the user
         all_emails = ('mitoc-member@example.com', 'same-person@example.com')
@@ -166,8 +169,8 @@ class TestMembershipView(MembershipViewTests):
 
         # There's already a person_id in the database for this person,
         # but the record has not yet been processed
-        db.person_to_update.return_value = 62
-        db.already_inserted_membership.return_value = False
+        self.db.person_to_update.return_value = 62
+        self.db.already_inserted_membership.return_value = False
 
         payload = {
             'req_merchant_defined_data1': 'membership',
@@ -181,23 +184,22 @@ class TestMembershipView(MembershipViewTests):
         self.assertEqual(response.status_code, 201)
 
         # The person exists - so they should not be created
-        db.add_person.assert_not_called()
+        self.db.add_person.assert_not_called()
 
         # Instead, they were updated
         datetime_paid = datetime.strptime(payload['signed_date_time'],
                                           CYBERSOURCE_DT_FORMAT)
-        db.add_membership.assert_called_with(62, '15.00', datetime_paid)
+        self.db.add_membership.assert_called_with(62, '15.00', datetime_paid)
 
-    @unittest.mock.patch('member.public.views.db')
     @unittest.mock.patch('member.public.views.other_verified_emails')
-    def test_new_membership(self, verified_emails, db):
+    def test_new_membership(self, verified_emails):
         """ We create a new person record when somebody is new to MITOC. """
         # The Trips web site gives all emails that we use to look up the user
         all_emails = ('mitoc-member@example.com', 'same-person@example.com')
         verified_emails.return_value = ('mitoc-member@example.com', all_emails)
 
-        db.person_to_update.return_value = None  # New to MITOC
-        db.add_person.return_value = 128  # After creating, person_id returned
+        self.db.person_to_update.return_value = None  # New to MITOC
+        self.db.add_person.return_value = 128  # After creating, person_id returned
 
         payload = {
             'req_merchant_defined_data1': 'membership',
@@ -212,11 +214,11 @@ class TestMembershipView(MembershipViewTests):
         self.assertEqual(response.status_code, 201)
 
         # A new person record needs to be created
-        db.add_person.assert_called_with(payload['req_bill_to_forename'],
-                                         payload['req_bill_to_surname'],
-                                         'mitoc-member@example.com')
+        self.db.add_person.assert_called_with(payload['req_bill_to_forename'],
+                                              payload['req_bill_to_surname'],
+                                              'mitoc-member@example.com')
 
         # The membership is then inserted for the new person
         datetime_paid = datetime.strptime(payload['signed_date_time'],
                                           CYBERSOURCE_DT_FORMAT)
-        db.add_membership.assert_called_with(128, '15.00', datetime_paid)
+        self.db.add_membership.assert_called_with(128, '15.00', datetime_paid)
