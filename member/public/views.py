@@ -4,6 +4,7 @@ from flask import Blueprint, current_app, json, request
 
 from member.envelopes import CompletedEnvelope
 from member.emails import other_verified_emails
+from member.utils import CYBERSOURCE_DT_FORMAT
 from member.signature import signature_valid
 from member import db
 
@@ -31,7 +32,7 @@ def add_membership():
     primary, all_emails = other_verified_emails(email)
 
     # Identify datetime (in UTC) when the transaction was completed
-    dt_paid = datetime.strptime(data['signed_date_time'], "%Y-%m-%dT%H:%M:%SZ")
+    dt_paid = datetime.strptime(data['signed_date_time'], CYBERSOURCE_DT_FORMAT)
 
     # Fetch membership, ideally for primary email, but otherwise most recent
     person_id = db.person_to_update(primary, all_emails)

@@ -3,46 +3,129 @@ import unittest
 import unittest.mock
 
 from member.app import create_app
+from member.utils import CYBERSOURCE_DT_FORMAT
+from member.signature import SecureAcceptanceSigner
 
 
-class TestMembershipView(unittest.TestCase):
+def cybersource_now():
+    """ Return the current datetime formatted as CyberSource does. """
+    return datetime.strftime(datetime.now(), CYBERSOURCE_DT_FORMAT)
+
+
+class MembershipViewTests(unittest.TestCase):
     def setUp(self):
         self.app = create_app()
         self.client = self.app.test_client()
         self.app.config['CYBERSOURCE_SECRET_KEY'] = 'secret-key'
+        self.signer = SecureAcceptanceSigner('secret-key')
 
-    def test_non_membership_transactions_ignored(self):
-        """ Any CyberSource transaction not for membership is ignored. """
-        response = self.client.post('/members/membership', data={
-            'req_merchant_defined_data1': 'rental',
+
+class TestSignaturesInMembershipView(MembershipViewTests):
+    """ Test the signature-handling aspects of the membership view. """
+    def setUp(self):
+        super().setUp()
+
+        # A completely valid payload, with appropriate signature
+        self.valid_payload = {
+            'decision': 'ACCEPT',
+            'req_merchant_defined_data1': 'membership',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
+            'signed_date_time': '2018-05-17T19:20:30Z',
             'auth_amount': '15.00',
-            'signature': 'xeOwZZ+8Ttm378U7zIssIt+DuP7NEsq/1pQz3bI5XuE='
-        })
-        self.assertEqual(response.status_code, 204)
+            'req_amount': '15.00',
+            'signed_field_names': (
+                'decision,'
+                'req_merchant_defined_data1,'
+                'req_merchant_defined_data3,'
+                'signed_date_time,'
+                'auth_amount,'
+                'req_amount'
+            ),
+            'signature': 'q+UdR3vWZcLyjoxozKh5O+NRkSMbFomsxGkz+RpsYAE='
+        }
 
     def test_no_signed_field_names(self):
         """ When 'signed_field_names' is absent, a 401 is returned. """
-        response = self.client.post('/members/membership', data={
-            'req_merchant_defined_data1': 'membership',
-            'req_merchant_defined_data3': 'mitoc-member@example.com',
-            'auth_amount': '15.00',
-            'signature': 'OL+mhpby4+mpXLY7ZidQhs7MELu7+iRU6cIwr0M96m8='
-        })
+        payload = self.valid_payload
+        payload.pop('signed_field_names')
+
+        response = self.client.post('/members/membership', data=payload)
         self.assertEqual(response.status_code, 401)
+
+    @unittest.mock.patch('member.public.views.db')
+    @unittest.mock.patch('member.public.views.other_verified_emails')
+    def test_valid_signature(self, verified_emails, db):
+        """ When a valid signature is included, the route succeeds. """
+        all_emails = ['mitoc-member@example.com']
+        verified_emails.return_value = ('mitoc-member@example.com', all_emails)
+
+        # There's already a person_id in the database for this person,
+        # but the record has not yet been processed
+        db.person_to_update.return_value = 62
+        db.already_inserted_membership.return_value = False
+
+        response = self.client.post('/members/membership', data=self.valid_payload)
+        self.assertEqual(response.status_code, 201)
 
     def test_invalid_signature(self):
         """ We 401 when signed names are present, but signature is invalid. """
-        response = self.client.post('/members/membership', data={
+        payload = self.valid_payload
+        payload['signature'] = 'this-signature-is-invalid'
+        response = self.client.post('/members/membership', data=payload)
+        self.assertEqual(response.status_code, 401)
+
+
+class TestMembershipView(MembershipViewTests):
+    """ Test behavior of membership view _not_ relating to signatures. """
+    def post_signed_data(self, data):
+        """ Generate a signature in the payload before posting.
+
+        This utility method allows us to test logic without manually having
+        to generate a valid signature.
+
+        Additionally, if any important fields were omitted, use some sensible
+        defaults.
+        """
+        payload = data.copy()
+
+        # Everything that's not accepting a membership is ignored
+        if 'decision' not in payload:
+            payload['decision'] = 'ACCEPT'
+        if 'req_merchant_defined_data1' not in payload:
+            data['req_merchant_defined_data1'] = 'membership'
+
+        # Timestamps must be present in order to not get a 400
+        if 'signed_date_time' not in payload:
+            payload['signed_date_time'] = cybersource_now()
+
+        # Sign the form
+        signed_field_names = [key for key in payload]
+        payload['signed_field_names'] = ','.join(signed_field_names)
+        payload['signature'] = self.signer.sign(payload, signed_field_names)
+
+        return self.client.post('/members/membership', data=payload)
+
+    def test_non_membership_transactions_ignored(self):
+        """ Any CyberSource transaction not for membership is ignored. """
+        response = self.post_signed_data({
+            'req_merchant_defined_data1': 'rental',
+            'req_merchant_defined_data3': 'mitoc-member@example.com',
+            'auth_amount': '15.00'
+        })
+        self.assertEqual(response.status_code, 204)
+
+    def test_non_acceptance_ignored(self):
+        """ If a transaction is anything but 'ACCEPT' it's ignored.
+
+        (This corresponds to payments that were rejected, are in review, etc.)
+        """
+        response = self.post_signed_data({
+            'decision': 'REVIEW',
             'req_merchant_defined_data1': 'membership',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
             'auth_amount': '15.00',
-            'signature': 'this-signature-is-invalid',
-            'signed_field_names': ('req_merchant_defined_data1,'
-                                   'req_merchant_defined_data3,'
-                                   'auth_amount')
         })
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 204)
 
     @unittest.mock.patch('member.public.views.db')
     @unittest.mock.patch('member.public.views.other_verified_emails')
@@ -63,14 +146,10 @@ class TestMembershipView(unittest.TestCase):
 
         # We submit a valid signature for a membership, but get a 202:
         # the membership has already been processed
-        response = self.client.post('/members/membership', data={
+        response = self.post_signed_data({
             'req_merchant_defined_data1': 'membership',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
             'auth_amount': '15.00',
-            'signed_field_names': ('req_merchant_defined_data1,'
-                                   'req_merchant_defined_data3,'
-                                   'auth_amount'),
-            'signature': 'OL+mhpby4+mpXLY7ZidQhs7MELu7+iRU6cIwr0M96m8=',
         })
         self.assertEqual(response.status_code, 202)
 
@@ -80,6 +159,7 @@ class TestMembershipView(unittest.TestCase):
     @unittest.mock.patch('member.public.views.db')
     @unittest.mock.patch('member.public.views.other_verified_emails')
     def test_update_membership(self, verified_emails, db):
+        """ Updating an existing membership works. """
         # The Trips web site gives all emails that we use to look up the user
         all_emails = ('mitoc-member@example.com', 'same-person@example.com')
         verified_emails.return_value = ('mitoc-member@example.com', all_emails)
@@ -92,17 +172,12 @@ class TestMembershipView(unittest.TestCase):
         payload = {
             'req_merchant_defined_data1': 'membership',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
+            'signed_date_time': '2018-01-24T21:48:32Z',
             'auth_amount': '15.00',
-            'req_amount': '15.00',
-            'signed_date_time': '2018-01-23T18:37:32Z',
-            'signed_field_names': ('req_merchant_defined_data1,'
-                                   'req_merchant_defined_data3,'
-                                   'auth_amount,'
-                                   'req_amount,'
-                                   'signed_date_time'),
-            'signature': '1kNDS/E4NSzoVHy0A+SGYRslFX2a7i9W95O12TdCbHA=',
+            'req_amount': '15.00'
         }
-        response = self.client.post('/members/membership', data=payload)
+
+        response = self.post_signed_data(payload)
         self.assertEqual(response.status_code, 201)
 
         # The person exists - so they should not be created
@@ -110,7 +185,7 @@ class TestMembershipView(unittest.TestCase):
 
         # Instead, they were updated
         datetime_paid = datetime.strptime(payload['signed_date_time'],
-                                          "%Y-%m-%dT%H:%M:%SZ")
+                                          CYBERSOURCE_DT_FORMAT)
         db.add_membership.assert_called_with(62, '15.00', datetime_paid)
 
     @unittest.mock.patch('member.public.views.db')
@@ -131,17 +206,9 @@ class TestMembershipView(unittest.TestCase):
             'req_bill_to_surname': 'Beaver',
             'auth_amount': '15.00',
             'req_amount': '15.00',
-            'signed_date_time': '2018-01-24T21:48:32Z',
-            'signed_field_names': ('req_merchant_defined_data1,'
-                                   'req_merchant_defined_data3,'
-                                   'req_bill_to_forename,'
-                                   'req_bill_to_surname,'
-                                   'auth_amount,'
-                                   'req_amount,'
-                                   'signed_date_time'),
-            'signature': 'HVML3j2W675QMWfUN7AqXRsts1/LEnsN8yDGt0Yd/BY=',
+            'signed_date_time': '2018-01-24T21:48:32Z'
         }
-        response = self.client.post('/members/membership', data=payload)
+        response = self.post_signed_data(data=payload)
         self.assertEqual(response.status_code, 201)
 
         # A new person record needs to be created
@@ -151,5 +218,5 @@ class TestMembershipView(unittest.TestCase):
 
         # The membership is then inserted for the new person
         datetime_paid = datetime.strptime(payload['signed_date_time'],
-                                          "%Y-%m-%dT%H:%M:%SZ")
+                                          CYBERSOURCE_DT_FORMAT)
         db.add_membership.assert_called_with(128, '15.00', datetime_paid)

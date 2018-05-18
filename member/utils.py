@@ -3,6 +3,8 @@ from datetime import datetime
 from member import db
 from member.emails import other_verified_emails
 
+CYBERSOURCE_DT_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
 
 def update_membership(verified_payload):
     """ Accepts a signed & verified CyberSource payload & updates membership.
@@ -26,5 +28,5 @@ def update_membership(verified_payload):
         last_name = data['req_bill_to_surname']
         person_id = db.add_person(first_name, last_name, primary)
 
-    datetime_paid = datetime.strptime(data['signed_date_time'], "%Y-%m-%dT%H:%M:%SZ")
+    datetime_paid = datetime.strptime(data['signed_date_time'], CYBERSOURCE_DT_FORMAT)
     db.add_membership(person_id, data['req_amount'], datetime_paid)
