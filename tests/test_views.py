@@ -22,6 +22,15 @@ class MembershipViewTests(unittest.TestCase):
         self.app.config['CYBERSOURCE_SECRET_KEY'] = 'secret-key'
         self.signer = SecureAcceptanceSigner('secret-key')
 
+    def configure_normal_update(self):
+        """ Configure mocks to indicate a person already in the db.
+
+        In this situation, the membership update has not yet been processed.
+        """
+        self.db.person_to_update.return_value = 62
+        self.db.already_inserted_membership.return_value = False
+        return 62
+
     def tearDown(self):
         self.db_patcher.stop()
 
@@ -64,10 +73,7 @@ class TestSignaturesInMembershipView(MembershipViewTests):
         all_emails = ['mitoc-member@example.com']
         verified_emails.return_value = ('mitoc-member@example.com', all_emails)
 
-        # There's already a person_id in the database for this person,
-        # but the record has not yet been processed
-        self.db.person_to_update.return_value = 62
-        self.db.already_inserted_membership.return_value = False
+        self.configure_normal_update()
 
         response = self.client.post('/members/membership', data=self.valid_payload)
         self.assertEqual(response.status_code, 201)
@@ -110,6 +116,12 @@ class TestMembershipView(MembershipViewTests):
 
         return self.client.post('/members/membership', data=payload)
 
+    def expect_no_processing(self):
+        """ No attempts are made to modify the database. """
+        # No further action is taken
+        self.db.add_person.assert_not_called()
+        self.db.add_membership.assert_not_called()
+
     def test_non_membership_transactions_ignored(self):
         """ Any CyberSource transaction not for membership is ignored. """
         response = self.post_signed_data({
@@ -132,6 +144,8 @@ class TestMembershipView(MembershipViewTests):
         })
         self.assertEqual(response.status_code, 204)
 
+        self.expect_no_processing()
+
     @unittest.mock.patch('member.public.views.other_verified_emails')
     def test_duplicate_requests_handled(self, verified_emails):
         """ Test idempotency of the membership route.
@@ -145,7 +159,7 @@ class TestMembershipView(MembershipViewTests):
 
         # There's already a person_id in the database for this person,
         # and this particular membership record was already inserted
-        self.db.person_to_update.return_value = 62
+        self.db.person_to_update.return_value = 128
         self.db.already_inserted_membership.return_value = True
 
         # We submit a valid signature for a membership, but get a 202:
@@ -157,8 +171,7 @@ class TestMembershipView(MembershipViewTests):
         })
         self.assertEqual(response.status_code, 202)
 
-        self.db.add_person.assert_not_called()
-        self.db.add_membership.assert_not_called()
+        self.expect_no_processing()
 
     @unittest.mock.patch('member.public.views.other_verified_emails')
     def test_update_membership(self, verified_emails):
@@ -167,10 +180,7 @@ class TestMembershipView(MembershipViewTests):
         all_emails = ('mitoc-member@example.com', 'same-person@example.com')
         verified_emails.return_value = ('mitoc-member@example.com', all_emails)
 
-        # There's already a person_id in the database for this person,
-        # but the record has not yet been processed
-        self.db.person_to_update.return_value = 62
-        self.db.already_inserted_membership.return_value = False
+        person_id = self.configure_normal_update()
 
         payload = {
             'req_merchant_defined_data1': 'membership',
@@ -189,7 +199,7 @@ class TestMembershipView(MembershipViewTests):
         # Instead, they were updated
         datetime_paid = datetime.strptime(payload['signed_date_time'],
                                           CYBERSOURCE_DT_FORMAT)
-        self.db.add_membership.assert_called_with(62, '15.00', datetime_paid)
+        self.db.add_membership.assert_called_with(person_id, '15.00', datetime_paid)
 
     @unittest.mock.patch('member.public.views.other_verified_emails')
     def test_new_membership(self, verified_emails):
