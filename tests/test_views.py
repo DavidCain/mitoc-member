@@ -1,10 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import unittest
 import unittest.mock
+from urllib.error import URLError
 
 from member.app import create_app
 from member.utils import CYBERSOURCE_DT_FORMAT
 from member.signature import SecureAcceptanceSigner
+
+
+def one_year_later():
+    return datetime.now().date() + timedelta(days=365)
 
 
 def cybersource_now():
@@ -14,8 +19,9 @@ def cybersource_now():
 
 class MembershipViewTests(unittest.TestCase):
     def setUp(self):
-        self.db_patcher = unittest.mock.patch('member.public.views.db')
-        self.db = self.db_patcher.start()
+        self.patchers = [unittest.mock.patch('member.public.views.db'),
+                         unittest.mock.patch('member.public.views.update_membership')]
+        self.db, self.update_membership = [p.start() for p in self.patchers]
 
         self.app = create_app()
         self.client = self.app.test_client()
@@ -29,10 +35,12 @@ class MembershipViewTests(unittest.TestCase):
         """
         self.db.person_to_update.return_value = 62
         self.db.already_inserted_membership.return_value = False
+        self.db.add_membership.return_value = (62, one_year_later())
         return 62
 
     def tearDown(self):
-        self.db_patcher.stop()
+        for patcher in self.patchers:
+            patcher.stop()
 
 
 class TestSignaturesInMembershipView(MembershipViewTests):
@@ -85,6 +93,19 @@ class TestSignaturesInMembershipView(MembershipViewTests):
         response = self.client.post('/members/membership', data=payload)
         self.assertEqual(response.status_code, 401)
 
+    @unittest.mock.patch('member.public.views.other_verified_emails')
+    def test_mitoc_trips_api_down(self, verified_emails):
+        """ If the MITOC Trips API is down, the route still succeeds. """
+        email = ['mitoc-member@example.com']
+        verified_emails.return_value = (email, [email])
+
+        self.configure_normal_update()
+
+        self.update_membership.side_effect = URLError("API is down!")
+
+        response = self.client.post('/members/membership', data=self.valid_payload)
+        self.assertEqual(response.status_code, 201)
+
 
 class TestMembershipView(MembershipViewTests):
     """ Test behavior of membership view _not_ relating to signatures. """
@@ -121,6 +142,7 @@ class TestMembershipView(MembershipViewTests):
         # No further action is taken
         self.db.add_person.assert_not_called()
         self.db.add_membership.assert_not_called()
+        self.update_membership.assert_not_called()
 
     def test_non_membership_transactions_ignored(self):
         """ Any CyberSource transaction not for membership is ignored. """
@@ -201,6 +223,11 @@ class TestMembershipView(MembershipViewTests):
                                           CYBERSOURCE_DT_FORMAT)
         self.db.add_membership.assert_called_with(person_id, '15.00', datetime_paid)
 
+        # MITOC Trips is notified of the updated membership
+        self.update_membership.assert_called_with(
+            'mitoc-member@example.com', membership_expires=one_year_later()
+        )
+
     @unittest.mock.patch('member.public.views.other_verified_emails')
     def test_new_membership(self, verified_emails):
         """ We create a new person record when somebody is new to MITOC. """
@@ -210,6 +237,7 @@ class TestMembershipView(MembershipViewTests):
 
         self.db.person_to_update.return_value = None  # New to MITOC
         self.db.add_person.return_value = 128  # After creating, person_id returned
+        self.db.add_membership.return_value = (128, one_year_later())
 
         payload = {
             'req_merchant_defined_data1': 'membership',
@@ -232,3 +260,8 @@ class TestMembershipView(MembershipViewTests):
         datetime_paid = datetime.strptime(payload['signed_date_time'],
                                           CYBERSOURCE_DT_FORMAT)
         self.db.add_membership.assert_called_with(128, '15.00', datetime_paid)
+
+        # MITOC Trips is notified of the new member
+        self.update_membership.assert_called_with(
+            'mitoc-member@example.com', membership_expires=one_year_later()
+        )

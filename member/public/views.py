@@ -1,9 +1,11 @@
 from datetime import datetime
+from urllib.error import URLError
 
 from flask import Blueprint, current_app, json, request
 
 from member.envelopes import CompletedEnvelope
-from member.emails import other_verified_emails
+from member.emails import other_verified_emails, update_membership
+from member.extensions import sentry
 from member.utils import CYBERSOURCE_DT_FORMAT
 from member.signature import signature_valid
 from member import db
@@ -45,8 +47,14 @@ def add_membership():
         last_name = data['req_bill_to_surname']
         person_id = db.add_person(first_name, last_name, primary)
 
-    db.add_membership(person_id, data['req_amount'], dt_paid)
+    mem_id, expires = db.add_membership(person_id, data['req_amount'], dt_paid)
     db.commit()
+
+    try:
+        update_membership(primary, membership_expires=expires)
+    except URLError:
+        if sentry:
+            sentry.captureException()
 
     # TODO: Consider firing off an alert if duplicate memberships were detected
     return json.jsonify(), 201
@@ -78,7 +86,13 @@ def add_waiver():
         person_id = db.add_person(env.first_name, env.last_name, primary)
 
     if not db.already_added_waiver(person_id, time_signed):
-        db.add_waiver(person_id, time_signed)
+        waiver_id, expires = db.add_waiver(person_id, time_signed)
     db.commit()
+
+    try:
+        update_membership(primary, waiver_expires=expires)
+    except URLError:
+        if sentry:
+            sentry.captureException()
 
     return json.jsonify()
