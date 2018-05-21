@@ -42,7 +42,8 @@ def add_person(first, last, email):
 
 def add_membership(person_id, price_paid, datetime_paid):
     """ Add a membership payment for an existing MITOC member. """
-    cursor = get_db().cursor()
+    db = get_db()
+    cursor = db.cursor()
     cursor.execute(
         '''
         insert into people_memberships
@@ -54,6 +55,8 @@ def add_membership(person_id, price_paid, datetime_paid):
               'membership_type': get_affiliation(price_paid),
               'datetime_paid': datetime_paid}
     )
+
+    db.commit()
 
     # MySQL doesn't support `returning` :(
     cursor.execute(
@@ -68,7 +71,8 @@ def add_membership(person_id, price_paid, datetime_paid):
 
 
 def add_waiver(person_id, datetime_signed):
-    cursor = get_db().cursor()
+    db = get_db()
+    cursor = db.cursor()
     cursor.execute(
         '''
         insert into people_waivers
@@ -78,6 +82,8 @@ def add_waiver(person_id, datetime_signed):
         ''', {'person_id': person_id,
               'datetime_signed': datetime_signed}
     )
+
+    db.commit()
 
     # MySQL doesn't support `returning` :(
     cursor.execute(
