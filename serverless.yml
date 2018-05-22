@@ -46,6 +46,12 @@ functions:
   app:
     handler: wsgi.handler
     events:
-      - http: ANY /
-      - http: 'ANY {proxy+}'
+      - http:
+          path: '/'
+          private: true
+          method: ANY
+      - http:
+          path: '{proxy+}'
+          private: true
+          method: ANY
     warmup: true
