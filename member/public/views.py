@@ -85,8 +85,10 @@ def add_waiver():
     if not person_id:
         person_id = db.add_person(env.first_name, env.last_name, primary)
 
-    if not db.already_added_waiver(person_id, time_signed):
-        waiver_id, expires = db.add_waiver(person_id, time_signed)
+    if db.already_added_waiver(person_id, time_signed):
+        return json.jsonify()  # Nothing more to do
+
+    waiver_id, expires = db.add_waiver(person_id, time_signed)
     db.commit()
 
     try:
