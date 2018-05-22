@@ -26,6 +26,8 @@ provider:
   stage: dev
   region: us-east-1
   memorySize: 128
+  apiKeys:
+    - mitoc-member-cybersource-key
   environment:
     API_GATEWAY_BASE_PATH: ${self:custom.customDomain.basePath}
   iamRoleStatements:
