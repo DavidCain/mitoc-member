@@ -12,6 +12,10 @@ from member import db
 
 blueprint = Blueprint('public', __name__)
 
+@blueprint.route("/members/membershiptest", methods=["POST"])
+def add_membership_test():
+    return json.jsonify(), 200
+
 
 @blueprint.route("/members/membership", methods=["POST"])
 def add_membership():

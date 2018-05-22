@@ -1,0 +1,49 @@
+service: mitoc-member
+plugins:
+  - serverless-python-requirements
+  - serverless-wsgi
+  - serverless-domain-manager
+  - serverless-plugin-warmup
+
+custom:
+  wsgi:
+    app: autoapp.app
+    packRequirements: false
+  pythonRequirements:
+    dockerizePip: true
+  customDomain:
+    domainName: 'mitoc-member.heychao.com'
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: false
+package:
+  exclude:
+    - node_modules/**
+    - venv/**
+provider:
+  name: aws
+  runtime: python3.6
+  stage: dev
+  region: us-east-1
+  memorySize: 128
+  environment:
+    API_GATEWAY_BASE_PATH: ${self:custom.customDomain.basePath}
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'lambda:InvokeFunction'
+      Resource:
+      - Fn::Join:
+        - ':'
+        - - arn:aws:lambda
+          - Ref: AWS::Region
+          - Ref: AWS::AccountId
+          - function:${self:service}-${opt:stage, self:provider.stage}-*
+
+functions:
+  app:
+    handler: wsgi.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+    warmup: true

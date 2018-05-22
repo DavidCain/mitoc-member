@@ -1,0 +1,30 @@
+{
+  "name": "mitoc-member",
+  "version": "1.0.0",
+  "description": "This repository contains endpoints for when a MITOC member creates or renews a membership. In order to be a member of the club, one must pay annual dues and sign a waiver. This repository processes both events, and creates an account in MITOC's membership system.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DavidCain/mitoc-member.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DavidCain/mitoc-member/issues"
+  },
+  "homepage": "https://github.com/DavidCain/mitoc-member#readme",
+  "devDependencies": {
+    "serverless-domain-manager": "^2.4.0",
+    "serverless-plugin-aws-alerts": "^1.2.4",
+    "serverless-plugin-warmup": "^3.6.1-rc.1",
+    "serverless-python-requirements": "^4.0.3",
+    "serverless-wsgi": "^1.4.8"
+  }
+}
