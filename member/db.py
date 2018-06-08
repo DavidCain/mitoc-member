@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from .extensions import mysql
 from flask import _app_ctx_stack
 
@@ -40,6 +42,47 @@ def add_person(first, last, email):
     return cursor.lastrowid
 
 
+def current_membership_expires(person_id):
+    """ Returns the datetime on which the current membership expires.
+
+    If there's no current membership, `None` is returned.
+    """
+    cursor = get_db().cursor()
+    cursor.execute(
+        '''
+        select max(expires)
+          from people_memberships
+         where person_id = %(person_id)s
+           and expires > now()
+        ''', {'person_id': person_id}
+    )
+    return cursor.fetchone()[0]
+
+
+def membership_start(person_id, datetime_paid):
+    """ Return the datetime on which a 12-month membership should start.
+
+    This method enables participants to pay for a membership before their
+    last one expires without losing the remaining days.
+
+    For example, if a participant has already have paid their membership dues
+    through December 15th, and it's late November, paying dues again should
+    allow their membership to be valid through December 15th of the next year.
+
+    First-time members (or already-expired members) will obviously have
+    memberships valid one calendar year from the datetime they paid.
+    """
+    future_expiration = current_membership_expires(person_id)
+    if not future_expiration:  # New member, or already expired
+        return datetime_paid
+
+    # If the membership expires some time in the next 40 days,
+    # then the next membership should be valid for one year after the expiration
+    if (future_expiration - datetime.utcnow()) < timedelta(days=40):
+        return future_expiration
+    return datetime_paid
+
+
 def add_membership(person_id, price_paid, datetime_paid):
     """ Add a membership payment for an existing MITOC member. """
     db = get_db()
@@ -49,11 +92,11 @@ def add_membership(person_id, price_paid, datetime_paid):
         insert into people_memberships
                (person_id, price_paid, membership_type, date_inserted, expires)
         values (%(person_id)s, %(price_paid)s, %(membership_type)s, now(),
-                date(date_add(%(datetime_paid)s, interval 1 year)))
+                date(date_add(%(membership_start)s, interval 1 year)))
         ''', {'person_id': person_id,
               'price_paid': price_paid,
               'membership_type': get_affiliation(price_paid),
-              'datetime_paid': datetime_paid}
+              'membership_start': membership_start(person_id, datetime_paid)}
     )
 
     db.commit()
