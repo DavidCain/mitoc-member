@@ -1,5 +1,6 @@
 Flask>=0.12.0,<1.0
 flask-mysql
 PyJWT
+pytz
 raven[flask]
 click

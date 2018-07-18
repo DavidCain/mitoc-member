@@ -1,7 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from .extensions import mysql
 from flask import _app_ctx_stack
+import pytz
+
+
+EST = pytz.timezone('US/Eastern')  # GMT-4 or GMT-5, depending on DST
 
 
 def get_db():
@@ -43,7 +47,7 @@ def add_person(first, last, email):
 
 
 def current_membership_expires(person_id):
-    """ Returns the datetime on which the current membership expires.
+    """ Returns the date on which the current membership expires.
 
     If there's no current membership, `None` is returned.
     """
@@ -60,7 +64,7 @@ def current_membership_expires(person_id):
 
 
 def membership_start(person_id, datetime_paid):
-    """ Return the datetime on which a 12-month membership should start.
+    """ Return the date on which a 12-month membership should start.
 
     This method enables participants to pay for a membership before their
     last one expires without losing the remaining days.
@@ -72,15 +76,18 @@ def membership_start(person_id, datetime_paid):
     First-time members (or already-expired members) will obviously have
     memberships valid one calendar year from the datetime they paid.
     """
+    date_paid = EST.fromutc(datetime_paid).date()
+
     future_expiration = current_membership_expires(person_id)
     if not future_expiration:  # New member, or already expired
-        return datetime_paid
+        return date_paid
 
     # If the membership expires some time in the next 40 days,
     # then the next membership should be valid for one year after the expiration
-    if (future_expiration - datetime.utcnow()) < timedelta(days=40):
+    if (future_expiration - date_paid) < timedelta(days=40):
         return future_expiration
-    return datetime_paid
+
+    return date_paid
 
 
 def add_membership(person_id, price_paid, datetime_paid):
@@ -92,7 +99,7 @@ def add_membership(person_id, price_paid, datetime_paid):
         insert into people_memberships
                (person_id, price_paid, membership_type, date_inserted, expires)
         values (%(person_id)s, %(price_paid)s, %(membership_type)s, now(),
-                date(date_add(%(membership_start)s, interval 1 year)))
+                date_add(%(membership_start)s, interval 1 year))
         ''', {'person_id': person_id,
               'price_paid': price_paid,
               'membership_type': get_affiliation(price_paid),
