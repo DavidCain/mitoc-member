@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/DavidCain/mitoc-member.svg?branch=master)](https://travis-ci.org/DavidCain/mitoc-member)
+
 # About
 This repository contains endpoints for when a MITOC member creates or renews a
 membership. In order to be a member of the club, one must pay annual dues and sign
