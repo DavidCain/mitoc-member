@@ -2,7 +2,7 @@ asn1crypto==0.24.0
 blinker==1.4
 cffi==1.11.5
 click==6.7
-cryptography==2.2.2
+cryptography==2.3
 Flask==0.12.4
 Flask-MySQL==1.4.0
 idna==2.7
