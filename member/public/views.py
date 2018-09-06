@@ -76,7 +76,7 @@ def add_waiver():
     """
     env = CompletedEnvelope(request.data)
     if not env.completed:
-        return json.jsonify()  # Still awaiting guardian's signature
+        return json.jsonify(), 204  # Still awaiting guardian's signature
 
     email, time_signed = env.releasor_email, env.time_signed
 
@@ -86,7 +86,7 @@ def add_waiver():
         person_id = db.add_person(env.first_name, env.last_name, primary)
 
     if db.already_added_waiver(person_id, time_signed):
-        return json.jsonify()  # Nothing more to do
+        return json.jsonify(), 204  # Nothing more to do
 
     waiver_id, expires = db.add_waiver(person_id, time_signed)
     db.commit()
@@ -97,4 +97,4 @@ def add_waiver():
         if sentry:
             sentry.captureException()
 
-    return json.jsonify()
+    return json.jsonify(), 201
