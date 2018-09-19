@@ -32,7 +32,13 @@ class DocuSignDocumentHelpers:
     def _to_utc(self, datetime_string):
         """ Convert datetimes from the document to UTC based on the supplied TZ. """
         hours_offset = int(self._get_hours_offset())
-        ts = datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S.%f")
+        # DocuSign seems to perhaps be transitioning over datetime formats?
+        # It sometimes gives datetimes with microseconds, sometimes without...
+        # (First observed datetimes without microseconds in September of 2018)
+        try:
+            ts = datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
+            ts = datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S.%f")
 
         utc_datetime = ts - timedelta(hours=hours_offset)
         return utc_datetime.replace(tzinfo=timezone.utc)
