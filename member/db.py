@@ -3,7 +3,21 @@ from datetime import timedelta
 from flask import _app_ctx_stack
 import pytz
 
+from .errors import InvalidAffiliation, IncorrectPayment
 from .extensions import mysql
+
+
+# Map from the two-letter codes in MITOC Trips to the affiliation strings in the geardb,
+# as well as the expected price for that membership level
+AFFILIATION_MAPPING = {
+    'MU': ("MIT Undergrad", 15),
+    'NU': ("Non-MIT Undergrad", 20),
+    'MG': ("MIT Grad", 15),
+    'NG': ("Non-MIT grad student", 20),
+    'MA': ("affiliate", 30),
+    'ML': ("MIT Alum", 35),
+    'NA': ("general", 40),
+}
 
 
 EST = pytz.timezone('US/Eastern')  # GMT-4 or GMT-5, depending on DST
@@ -19,12 +33,6 @@ def get_db():
 
 def commit():
     get_db().commit()
-
-
-def get_affiliation(amount):
-    """ There's no CyberSource field for affiliation, so deduce from cost. """
-    # See enum on people_memberships.affiliation
-    return {15: 'student', 20: 'affiliate', 25: 'general'}[int(amount)]
 
 
 def add_person(first, last, email):
@@ -91,10 +99,21 @@ def membership_start(person_id, datetime_paid):
     return date_paid
 
 
-def add_membership(person_id, price_paid, datetime_paid):
+def add_membership(person_id, price_paid, datetime_paid, two_letter_affiliation_code):
     """ Add a membership payment for an existing MITOC member. """
     db = get_db()
     cursor = db.cursor()
+    try:
+        affiliation, expected_price = AFFILIATION_MAPPING[two_letter_affiliation_code]
+    except KeyError:
+        raise InvalidAffiliation(f"{two_letter_affiliation_code} is not a recognized")
+
+    # Because form data can be manipulated by users, it's perfectly possible to charge
+    # yourself $1, and have a valid callback to this endpoint. Ensure that users
+    # are actually paying the value we expect
+    if expected_price != float(price_paid):
+        raise IncorrectPayment(f"Expected {expected_price}, got {price_paid}")
+
     cursor.execute(
         '''
         insert into people_memberships
@@ -103,7 +122,7 @@ def add_membership(person_id, price_paid, datetime_paid):
                 date_add(%(membership_start)s, interval 1 year))
         ''', {'person_id': person_id,
               'price_paid': price_paid,
-              'membership_type': get_affiliation(price_paid),
+              'membership_type': affiliation,
               'membership_start': membership_start(person_id, datetime_paid)}
     )
 

@@ -4,15 +4,10 @@ import unittest
 import unittest.mock
 
 from member import db
+from member import errors
 
 
 class TestDbMethods(unittest.TestCase):
-    def test_affiliation(self):
-        """ Test mapping of amounts paid to membership values. """
-        self.assertEqual(db.get_affiliation(15.0), 'student')
-        self.assertEqual(db.get_affiliation(20.0), 'affiliate')
-        self.assertEqual(db.get_affiliation(25.0), 'general')
-
     @unittest.mock.patch('member.db.current_membership_expires')
     def test_new_member_expiration(self, current_membership_expires):
         """ New memberships start on the date of payment in Boston. """
@@ -56,3 +51,21 @@ class TestDbMethods(unittest.TestCase):
 
         # Our resulting membership will only be valid until next January
         self.assertEqual(date_paid_EST, db.membership_start(37, datetime_paid))
+
+    @unittest.mock.patch('member.db.get_db')
+    def test_unknown_affiliation_given(self, get_db):
+        """ Make sure that the affiliation we see is valid. """
+        cursor = unittest.mock.Mock()
+        get_db.cursor.return_value = cursor
+        with self.assertRaises(errors.InvalidAffiliation):
+            db.add_membership(42, '20.00', datetime.now(), 'MX')
+        cursor.execute.assert_not_called()
+
+    @unittest.mock.patch('member.db.get_db')
+    def test_insufficient_payment_given(self, get_db):
+        """ Ensure that the payment received was the amount expected. """
+        cursor = unittest.mock.Mock()
+        get_db.cursor.return_value = cursor
+        with self.assertRaises(errors.IncorrectPayment):
+            db.add_membership(42, '1.23', datetime.now(), 'NA')
+        cursor.execute.assert_not_called()

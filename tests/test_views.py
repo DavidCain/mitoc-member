@@ -52,6 +52,7 @@ class TestSignaturesInMembershipView(MembershipViewTests):
         self.valid_payload = {
             'decision': 'ACCEPT',
             'req_merchant_defined_data1': 'membership',
+            'req_merchant_defined_data2': 'MU',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
             'signed_date_time': '2018-05-17T19:20:30Z',
             'auth_amount': '15.00',
@@ -59,13 +60,18 @@ class TestSignaturesInMembershipView(MembershipViewTests):
             'signed_field_names': (
                 'decision,'
                 'req_merchant_defined_data1,'
+                'req_merchant_defined_data2,'
                 'req_merchant_defined_data3,'
                 'signed_date_time,'
                 'auth_amount,'
                 'req_amount'
             ),
-            'signature': 'q+UdR3vWZcLyjoxozKh5O+NRkSMbFomsxGkz+RpsYAE='
+            'signature': '/PtadMBZdyJYtnnZbPa9udh/iIuTTAQoELEkUljpEnk=',
         }
+        #self.valid_payload['signature'] = self.signer.sign(
+        #   self.valid_payload,
+        #   self.valid_payload['signed_field_names'].split(',')
+        #)
 
     def test_no_signed_field_names(self):
         """ When 'signed_field_names' is absent, a 401 is returned. """
@@ -161,6 +167,7 @@ class TestMembershipView(MembershipViewTests):
         response = self.post_signed_data({
             'decision': 'REVIEW',
             'req_merchant_defined_data1': 'membership',
+            'req_merchant_defined_data2': 'MU',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
             'auth_amount': '15.00',
         })
@@ -188,6 +195,7 @@ class TestMembershipView(MembershipViewTests):
         # the membership has already been processed
         response = self.post_signed_data({
             'req_merchant_defined_data1': 'membership',
+            'req_merchant_defined_data2': 'MU',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
             'auth_amount': '15.00',
         })
@@ -206,6 +214,7 @@ class TestMembershipView(MembershipViewTests):
 
         payload = {
             'req_merchant_defined_data1': 'membership',
+            'req_merchant_defined_data2': 'MU',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
             'signed_date_time': '2018-01-24T21:48:32Z',
             'auth_amount': '15.00',
@@ -221,7 +230,7 @@ class TestMembershipView(MembershipViewTests):
         # Instead, they were updated
         datetime_paid = datetime.strptime(payload['signed_date_time'],
                                           CYBERSOURCE_DT_FORMAT)
-        self.db.add_membership.assert_called_with(person_id, '15.00', datetime_paid)
+        self.db.add_membership.assert_called_with(person_id, '15.00', datetime_paid, 'MU')
 
         # MITOC Trips is notified of the updated membership
         self.update_membership.assert_called_with(
@@ -241,6 +250,7 @@ class TestMembershipView(MembershipViewTests):
 
         payload = {
             'req_merchant_defined_data1': 'membership',
+            'req_merchant_defined_data2': 'MU',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
             'req_bill_to_forename': 'Tim',
             'req_bill_to_surname': 'Beaver',
@@ -259,7 +269,7 @@ class TestMembershipView(MembershipViewTests):
         # The membership is then inserted for the new person
         datetime_paid = datetime.strptime(payload['signed_date_time'],
                                           CYBERSOURCE_DT_FORMAT)
-        self.db.add_membership.assert_called_with(128, '15.00', datetime_paid)
+        self.db.add_membership.assert_called_with(128, '15.00', datetime_paid, 'MU')
 
         # MITOC Trips is notified of the new member
         self.update_membership.assert_called_with(

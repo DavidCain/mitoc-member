@@ -47,7 +47,9 @@ def add_membership():
         last_name = data['req_bill_to_surname']
         person_id = db.add_person(first_name, last_name, primary)
 
-    mem_id, expires = db.add_membership(person_id, data['req_amount'], dt_paid)
+    two_letter_affiliation_code = data.get('req_merchant_defined_data2')
+    mem_id, expires = db.add_membership(person_id, data['req_amount'], dt_paid,
+                                        two_letter_affiliation_code)
     db.commit()
 
     try:
