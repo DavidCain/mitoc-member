@@ -2,6 +2,7 @@ from distutils.util import strtobool
 import os
 
 
+# pylint: disable=invalid-name
 verify = os.getenv('VERIFY_CYBERSOURCE_SIGNATURE', 'true')
 VERIFY_CYBERSOURCE_SIGNATURE = strtobool(verify)
 

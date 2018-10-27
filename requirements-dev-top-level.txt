@@ -1,4 +1,5 @@
 -r requirements-top-level.txt
 
 # Dev dependencies
+pylint
 pytest

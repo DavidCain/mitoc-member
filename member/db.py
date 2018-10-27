@@ -1,8 +1,9 @@
 from datetime import timedelta
 
-from .extensions import mysql
 from flask import _app_ctx_stack
 import pytz
+
+from .extensions import mysql
 
 
 EST = pytz.timezone('US/Eastern')  # GMT-4 or GMT-5, depending on DST
