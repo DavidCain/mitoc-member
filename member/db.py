@@ -11,12 +11,12 @@ from .extensions import mysql
 # as well as the expected price for that membership level
 AFFILIATION_MAPPING = {
     'MU': ("MIT Undergrad", 15),
-    'NU': ("Non-MIT Undergrad", 20),
+    'NU': ("Non-MIT Undergrad", 15),
     'MG': ("MIT Grad", 15),
-    'NG': ("Non-MIT grad student", 20),
-    'MA': ("affiliate", 30),
-    'ML': ("MIT Alum", 35),
-    'NA': ("general", 40),
+    'NG': ("Non-MIT grad student", 15),
+    'MA': ("affiliate", 20),
+    'ML': ("MIT Alum", 25),
+    'NA': ("general", 25),
 }
 
 
