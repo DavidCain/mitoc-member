@@ -25,12 +25,13 @@ class UpdateMembershipTests(unittest.TestCase):
         def inspect(request):
             self.assertEqual(request.method, 'POST')
             self.assertEqual(request.full_url,
-                            'https://mitoc-trips.mit.edu/data/membership/')
+                             'https://mitoc-trips.mit.edu/data/membership/')
 
             authorization = request.get_header('Authorization')
             self.assertTrue(authorization.startswith('Bearer: '))
             _, token = authorization.split()
-            payload = jwt.decode(token, self.app.config['MEMBERSHIP_SECRET_KEY'])
+            payload = jwt.decode(token, self.app.config['MEMBERSHIP_SECRET_KEY'],
+                                 algorithms=['HS512', 'HS256'])
             payload.pop('exp')  # This claim changes dynamically, we needn't test here
             self.assertEqual(payload, expected_payload)
 

@@ -17,3 +17,7 @@ MYSQL_DATABASE_USER = os.getenv('GEAR_DATABASE_USER', 'ws')
 MYSQL_DATABASE_PASSWORD = os.getenv('GEAR_DATABASE_PASSWORD', 'password')
 MYSQL_DATABASE_HOST = os.getenv('GEAR_DATABASE_HOST', 'localhost')
 MYSQL_DATABASE_PORT = int(os.getenv('GEAR_DATABASE_PORT', '3306'))
+
+# Silences Werkzeug XHR deprecation warnings. Can be removed once we're on Flask 1.x
+# See: https://github.com/pallets/flask/issues/2549
+JSONIFY_PRETTYPRINT_REGULAR=False
