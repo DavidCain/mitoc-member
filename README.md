@@ -17,7 +17,7 @@ our API is notified.
 
 ## Becoming a member
 Membership payments and waiver completions are initiated at:
-http://mitoc.mit.edu/#join
+https://mitoc.mit.edu/#join
 
 ## Installation
 
