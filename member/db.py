@@ -10,13 +10,13 @@ from .extensions import mysql
 # Map from the two-letter codes in MITOC Trips to the affiliation strings in the geardb,
 # as well as the expected price for that membership level
 AFFILIATION_MAPPING = {
-    'MU': ("MIT Undergrad", 15),
-    'NU': ("Non-MIT Undergrad", 15),
-    'MG': ("MIT Grad", 15),
+    'MU': ("MIT undergrad", 15),
+    'NU': ("Non-MIT undergrad", 15),
+    'MG': ("MIT grad student", 15),
     'NG': ("Non-MIT grad student", 15),
-    'MA': ("affiliate", 20),
-    'ML': ("MIT Alum", 25),
-    'NA': ("general", 25),
+    'MA': ("MIT affiliate", 20),
+    'ML': ("MIT alum", 25),
+    'NA': ("Non-affiliate", 25),
 }
 
 
@@ -32,6 +32,7 @@ def get_db():
 
 
 def commit():
+    """ Commit the current transaction. """
     get_db().commit()
 
 
@@ -122,8 +123,18 @@ def add_membership(person_id, price_paid, datetime_paid, two_letter_affiliation_
                 date_add(%(membership_start)s, interval 1 year))
         ''', {'person_id': person_id,
               'price_paid': price_paid,
-              'membership_type': affiliation,
+              'membership_type': two_letter_affiliation_code,
               'membership_start': membership_start(person_id, datetime_paid)}
+    )
+
+    # We store the member's current affiliation directly on `people`
+    cursor.execute(
+        '''
+        update people
+           set affiliation = %(affiliation)s
+         where person_id = %(person_id)s
+        ''', {'affiliation': affiliation,
+              'person_id': person_id}
     )
 
     db.commit()
