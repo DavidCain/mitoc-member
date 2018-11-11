@@ -69,3 +69,8 @@ class TestDbMethods(unittest.TestCase):
         with self.assertRaises(errors.IncorrectPayment):
             db.add_membership(42, '1.23', datetime.now(), 'NA')
         cursor.execute.assert_not_called()
+
+    def test_updating_with_invalid_affiliation(self):
+        """ We only attempt to update people with valid affiliations. """
+        with self.assertRaises(ValueError):
+            db.update_affiliation(42, "Cousin of MIT alumni's brother")

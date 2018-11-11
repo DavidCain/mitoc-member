@@ -3,6 +3,7 @@ from datetime import timedelta
 from flask import _app_ctx_stack
 import pytz
 
+from mitoc_const import affiliations
 from .errors import InvalidAffiliation, IncorrectPayment
 from .extensions import mysql
 
@@ -10,13 +11,7 @@ from .extensions import mysql
 # Map from the two-letter codes in MITOC Trips to the affiliation strings in the geardb,
 # as well as the expected price for that membership level
 AFFILIATION_MAPPING = {
-    'MU': ("MIT undergrad", 15),
-    'NU': ("Non-MIT undergrad", 15),
-    'MG': ("MIT grad student", 15),
-    'NG': ("Non-MIT grad student", 15),
-    'MA': ("MIT affiliate", 20),
-    'ML': ("MIT alum", 25),
-    'NA': ("Non-affiliate", 25),
+    aff.CODE: (aff.VALUE, aff.ANNUAL_DUES) for aff in affiliations.ALL
 }
 
 
@@ -100,6 +95,25 @@ def membership_start(person_id, datetime_paid):
     return date_paid
 
 
+def update_affiliation(person_id, affiliation):
+    """ Update the current affiliation known for the person. """
+    if affiliation not in {aff.VALUE for aff in affiliations.ALL}:
+        raise ValueError(f"Unknown affiliation! {affiliation}")
+
+    db = get_db()
+    cursor = db.cursor()
+
+    # We store the member's current affiliation directly on `people`
+    cursor.execute(
+        '''
+        update people
+           set affiliation = %(affiliation)s
+         where id = %(person_id)s
+        ''', {'affiliation': affiliation,
+              'person_id': person_id}
+    )
+
+
 def add_membership(person_id, price_paid, datetime_paid, two_letter_affiliation_code):
     """ Add a membership payment for an existing MITOC member. """
     db = get_db()
@@ -127,16 +141,7 @@ def add_membership(person_id, price_paid, datetime_paid, two_letter_affiliation_
               'membership_start': membership_start(person_id, datetime_paid)}
     )
 
-    # We store the member's current affiliation directly on `people`
-    cursor.execute(
-        '''
-        update people
-           set affiliation = %(affiliation)s
-         where person_id = %(person_id)s
-        ''', {'affiliation': affiliation,
-              'person_id': person_id}
-    )
-
+    update_affiliation(person_id, affiliation)
     db.commit()
 
     # MySQL doesn't support `returning` :(

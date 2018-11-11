@@ -91,6 +91,8 @@ def add_waiver():
         return json.jsonify(), 204  # Nothing more to do
 
     waiver_id, expires = db.add_waiver(person_id, time_signed)
+    # The affiliation stated on the waiver is the most recent we know!
+    db.update_affiliation(person_id, env.affiliation)
     db.commit()
 
     try:

@@ -6,6 +6,8 @@ this utility module parses out the MITOC member's information.
 from datetime import datetime, timezone, timedelta
 import xml.etree.ElementTree as ET
 
+from mitoc_const import affiliations
+
 
 class DocuSignDocumentHelpers:
     """ Generic helpers for use in parsing any DocuSign XML document. """
@@ -24,6 +26,7 @@ class DocuSignDocumentHelpers:
         return self.root.find(xpath, self.ns)
 
     def get_val(self, hierarchy):
+        """ Return the value in a single element. """
         return self.get_element(hierarchy).text.strip()
 
     def _get_hours_offset(self):
@@ -118,8 +121,19 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
 
     @property
     def releasor_email(self):
+        """ The email of the person who signed the release. """
         return self.tab_status("Releasor's Email")
 
     @property
     def releasor_name(self):
+        """ The name of the person who signed the release. """
         return self.tab_status("Releasor's Name")
+
+    @property
+    def affiliation(self):
+        """ The member's stated affiliation to MIT. """
+        selector = self.recipient_status + ['FormData', 'xfdf', 'fields',
+                                            "field[@name='Affiliation']", 'value']
+        stated_affiliation = self.get_element(selector).text
+        assert stated_affiliation in {aff.VALUE for aff in affiliations.ALL}
+        return stated_affiliation
