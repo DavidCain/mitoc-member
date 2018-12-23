@@ -9,7 +9,7 @@ idna==2.7
 itsdangerous==1.1.0
 Jinja2==2.10
 MarkupSafe==1.1.0
-mitoc-const==0.3.1
+mitoc-const==0.4.0
 pycparser==2.19
 PyJWT==1.6.4
 PyMySQL==0.9.2
