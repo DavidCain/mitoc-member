@@ -3,7 +3,6 @@ import os
 from flaskext.mysql import MySQL
 from raven.contrib.flask import Sentry
 
-
 mysql = MySQL()
 
 RAVEN_DSN = os.getenv('RAVEN_DSN')

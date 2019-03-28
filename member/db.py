@@ -1,12 +1,11 @@
 from datetime import timedelta
 
-from flask import _app_ctx_stack
 import pytz
-
+from flask import _app_ctx_stack
 from mitoc_const import affiliations
-from .errors import InvalidAffiliation, IncorrectPayment
-from .extensions import mysql
 
+from .errors import IncorrectPayment, InvalidAffiliation
+from .extensions import mysql
 
 # Map from the two-letter codes in MITOC Trips to the affiliation strings in the geardb,
 # as well as the expected price for that membership level
@@ -46,7 +45,8 @@ def add_person(first, last, email):
         -- * city & state: we've historically not bothered tracking
         insert into people (firstname, lastname, email, mitoc_credit, date_inserted)
         values (%(first)s, %(last)s, %(email)s, 0, now())
-        ''', {'first': first, 'last': last, 'email': email}
+        ''',
+        {'first': first, 'last': last, 'email': email},
     )
     return cursor.lastrowid
 
@@ -63,7 +63,8 @@ def current_membership_expires(person_id):
           from people_memberships
          where person_id = %(person_id)s
            and expires > now()
-        ''', {'person_id': person_id}
+        ''',
+        {'person_id': person_id},
     )
     return cursor.fetchone()[0]
 
@@ -109,8 +110,8 @@ def update_affiliation(person_id, affiliation):
         update people
            set affiliation = %(affiliation)s
          where id = %(person_id)s
-        ''', {'affiliation': affiliation,
-              'person_id': person_id}
+        ''',
+        {'affiliation': affiliation, 'person_id': person_id},
     )
 
 
@@ -135,10 +136,13 @@ def add_membership(person_id, price_paid, datetime_paid, two_letter_affiliation_
                (person_id, price_paid, membership_type, date_inserted, expires)
         values (%(person_id)s, %(price_paid)s, %(membership_type)s, now(),
                 date_add(%(membership_start)s, interval 1 year))
-        ''', {'person_id': person_id,
-              'price_paid': price_paid,
-              'membership_type': two_letter_affiliation_code,
-              'membership_start': membership_start(person_id, datetime_paid)}
+        ''',
+        {
+            'person_id': person_id,
+            'price_paid': price_paid,
+            'membership_type': two_letter_affiliation_code,
+            'membership_start': membership_start(person_id, datetime_paid),
+        },
     )
 
     update_affiliation(person_id, affiliation)
@@ -150,7 +154,8 @@ def add_membership(person_id, price_paid, datetime_paid, two_letter_affiliation_
         select id, expires
           from people_memberships
          where id = %(membership_id)s
-        ''', {'membership_id': cursor.lastrowid}
+        ''',
+        {'membership_id': cursor.lastrowid},
     )
     membership_id, date_expires = cursor.fetchone()
     return membership_id, date_expires
@@ -165,8 +170,8 @@ def add_waiver(person_id, datetime_signed):
                (person_id, date_signed, expires)
         values (%(person_id)s, %(datetime_signed)s,
                 date_add(%(datetime_signed)s, interval 1 year))
-        ''', {'person_id': person_id,
-              'datetime_signed': datetime_signed}
+        ''',
+        {'person_id': person_id, 'datetime_signed': datetime_signed},
     )
 
     db.commit()
@@ -177,7 +182,8 @@ def add_waiver(person_id, datetime_signed):
         select id, date(expires)
           from people_waivers
          where id = %(waiver_id)s
-        ''', {'waiver_id': cursor.lastrowid}
+        ''',
+        {'waiver_id': cursor.lastrowid},
     )
     waiver_id, date_expires = cursor.fetchone()
     return waiver_id, date_expires
@@ -200,7 +206,8 @@ def already_added_waiver(person_id, date_signed):
            where person_id = %(person_id)s
              and date(date_signed) = date(%(date_signed)s)
         ) as already_inserted
-        ''', {'person_id': person_id, 'date_signed': date_signed}
+        ''',
+        {'person_id': person_id, 'date_signed': date_signed},
     )
     return bool(cursor.fetchone()[0])
 
@@ -220,7 +227,8 @@ def already_inserted_membership(person_id, date_effective):
            where person_id = %(person_id)s
              and expires = date(date_add(%(date_effective)s, interval 1 year))
         ) as already_inserted
-        ''', {'person_id': person_id, 'date_effective': date_effective}
+        ''',
+        {'person_id': person_id, 'date_effective': date_effective},
     )
     return bool(cursor.fetchone()[0])
 
@@ -255,7 +263,8 @@ def person_to_update(primary_email, all_emails):
         -- (The plus symbol is how we express 'nulls last')
          order by +(t.last_update > date_sub(now(), interval 1 year)) desc,
                   +t.last_update desc;
-        ''', {'primary_email': primary_email, 'all_emails': all_emails}
+        ''',
+        {'primary_email': primary_email, 'all_emails': all_emails},
     )
     person = cursor.fetchone()
     return person and person[0]

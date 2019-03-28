@@ -3,14 +3,15 @@
 Envelopes are delivered to endpoints via the eventNotification setting -
 this utility module parses out the MITOC member's information.
 """
-from datetime import datetime, timezone, timedelta
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta, timezone
 
 from mitoc_const import affiliations
 
 
 class DocuSignDocumentHelpers:
     """ Generic helpers for use in parsing any DocuSign XML document. """
+
     ns = {'docu': "http://www.docusign.net/API/3.0"}
     recipient_status = ['EnvelopeStatus', 'RecipientStatuses', 'RecipientStatus']
 
@@ -49,6 +50,7 @@ class DocuSignDocumentHelpers:
 
 class CompletedEnvelope(DocuSignDocumentHelpers):
     """ Navigate a DocuSignEnvelopeInformation resource (completed waiver). """
+
     def __init__(self, xml_contents):
         """ Error out early if it's the unexpected document type. """
         super().__init__(xml_contents)
@@ -132,8 +134,13 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
     @property
     def affiliation(self):
         """ The member's stated affiliation to MIT. """
-        selector = self.recipient_status + ['FormData', 'xfdf', 'fields',
-                                            "field[@name='Affiliation']", 'value']
+        selector = self.recipient_status + [
+            'FormData',
+            'xfdf',
+            'fields',
+            "field[@name='Affiliation']",
+            'value',
+        ]
         stated_affiliation = self.get_element(selector).text
         assert stated_affiliation in {aff.VALUE for aff in affiliations.ALL}
         return stated_affiliation

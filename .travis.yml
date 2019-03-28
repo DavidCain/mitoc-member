@@ -4,6 +4,8 @@ python:
 install:
   - pip install -r requirements-dev.txt
 script:
+  - black --skip-string-normalization --check member
+  - isort -rc --check member
   - flask test
 env:
   - FLASK_APP=autoapp.py

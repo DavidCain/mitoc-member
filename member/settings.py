@@ -1,16 +1,17 @@
-from distutils.util import strtobool
 import os
-
+from distutils.util import strtobool
 
 # pylint: disable=invalid-name
 verify = os.getenv('VERIFY_CYBERSOURCE_SIGNATURE', 'true')
 VERIFY_CYBERSOURCE_SIGNATURE = strtobool(verify)
 
-CYBERSOURCE_SECRET_KEY = os.getenv('CYBERSOURCE_SECRET_KEY',
-                                   'Secret key used to sign CyberSource')
+CYBERSOURCE_SECRET_KEY = os.getenv(
+    'CYBERSOURCE_SECRET_KEY', 'Secret key used to sign CyberSource'
+)
 
-MEMBERSHIP_SECRET_KEY = os.getenv('MEMBERSHIP_SECRET_KEY',
-                                  'secret shared with mitoc-trips')
+MEMBERSHIP_SECRET_KEY = os.getenv(
+    'MEMBERSHIP_SECRET_KEY', 'secret shared with mitoc-trips'
+)
 
 MYSQL_DATABASE_DB = os.getenv('GEAR_DATABASE_NAME', 'geardb')
 MYSQL_DATABASE_USER = os.getenv('GEAR_DATABASE_USER', 'ws')
@@ -20,4 +21,4 @@ MYSQL_DATABASE_PORT = int(os.getenv('GEAR_DATABASE_PORT', '3306'))
 
 # Silences Werkzeug XHR deprecation warnings. Can be removed once we're on Flask 1.x
 # See: https://github.com/pallets/flask/issues/2549
-JSONIFY_PRETTYPRINT_REGULAR=False
+JSONIFY_PRETTYPRINT_REGULAR = False

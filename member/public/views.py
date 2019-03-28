@@ -3,12 +3,12 @@ from urllib.error import URLError
 
 from flask import Blueprint, current_app, json, request
 
-from member.envelopes import CompletedEnvelope
-from member.emails import other_verified_emails, update_membership
-from member.extensions import sentry
-from member.utils import CYBERSOURCE_DT_FORMAT
-from member.signature import signature_valid
 from member import db
+from member.emails import other_verified_emails, update_membership
+from member.envelopes import CompletedEnvelope
+from member.extensions import sentry
+from member.signature import signature_valid
+from member.utils import CYBERSOURCE_DT_FORMAT
 
 blueprint = Blueprint('public', __name__)
 
@@ -48,8 +48,9 @@ def add_membership():
         person_id = db.add_person(first_name, last_name, primary)
 
     two_letter_affiliation_code = data.get('req_merchant_defined_data2')
-    mem_id, expires = db.add_membership(person_id, data['req_amount'], dt_paid,
-                                        two_letter_affiliation_code)
+    mem_id, expires = db.add_membership(
+        person_id, data['req_amount'], dt_paid, two_letter_affiliation_code
+    )
     db.commit()
 
     try:

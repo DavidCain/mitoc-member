@@ -1,6 +1,6 @@
-import jwt
-
 from datetime import datetime, timedelta
+
+import jwt
 from flask import current_app
 
 
