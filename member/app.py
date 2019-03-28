@@ -20,7 +20,7 @@ def create_app():
 
 def register_teardowns(app):
     @app.teardown_appcontext
-    def close_db_connection(exception):
+    def close_db_connection(_exception):  # pylint: disable=unused-variable
         """Closes the database again at the end of the request."""
         top = _app_ctx_stack.top
         if hasattr(top, 'conn'):

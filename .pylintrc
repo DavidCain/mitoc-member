@@ -9,12 +9,7 @@ disable=
   missing-docstring,
 
   # Fix soon
-  no-self-use,
   no-value-for-parameter,
-  relative-beyond-top-level
-  unused-argument,
-  unused-variable,
-
 
 [REPORTS]
 

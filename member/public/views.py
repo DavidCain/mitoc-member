@@ -48,7 +48,7 @@ def add_membership():
         person_id = db.add_person(first_name, last_name, primary)
 
     two_letter_affiliation_code = data.get('req_merchant_defined_data2')
-    mem_id, expires = db.add_membership(
+    _, expires = db.add_membership(
         person_id, data['req_amount'], dt_paid, two_letter_affiliation_code
     )
     db.commit()
@@ -59,7 +59,6 @@ def add_membership():
         if sentry:
             sentry.captureException()
 
-    # TODO: Consider firing off an alert if duplicate memberships were detected
     return json.jsonify(), 201
 
 
@@ -91,7 +90,7 @@ def add_waiver():
     if db.already_added_waiver(person_id, time_signed):
         return json.jsonify(), 204  # Nothing more to do
 
-    waiver_id, expires = db.add_waiver(person_id, time_signed)
+    _, expires = db.add_waiver(person_id, time_signed)
     # The affiliation stated on the waiver is the most recent we know!
     db.update_affiliation(person_id, env.affiliation)
     db.commit()

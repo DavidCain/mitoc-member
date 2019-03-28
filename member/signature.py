@@ -35,6 +35,7 @@ class SecureAcceptanceSigner:
         signature_calc = self.sign(post_data, signed_field_names)
         return signature_given == signature_calc
 
-    def _build_message(self, data, signed_fields):
+    @staticmethod
+    def _build_message(data, signed_fields):
         parts = ("{}={}".format(f, data.get(f, '')) for f in signed_fields)
         return ','.join(parts)

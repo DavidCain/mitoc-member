@@ -4,8 +4,8 @@ import pytz
 from flask import _app_ctx_stack
 from mitoc_const import affiliations
 
-from .errors import IncorrectPayment, InvalidAffiliation
-from .extensions import mysql
+from member.errors import IncorrectPayment, InvalidAffiliation
+from member.extensions import mysql
 
 # Map from the two-letter codes in MITOC Trips to the affiliation strings in the geardb,
 # as well as the expected price for that membership level
