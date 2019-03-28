@@ -4,7 +4,7 @@ import unittest.mock
 from urllib.error import URLError
 
 from member.app import create_app
-from member.utils import CYBERSOURCE_DT_FORMAT
+from member.cybersource import CYBERSOURCE_DT_FORMAT
 from member.signature import SecureAcceptanceSigner
 
 

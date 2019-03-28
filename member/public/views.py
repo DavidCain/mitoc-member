@@ -4,11 +4,11 @@ from urllib.error import URLError
 from flask import Blueprint, current_app, json, request
 
 from member import db
+from member.cybersource import CYBERSOURCE_DT_FORMAT
 from member.emails import other_verified_emails, update_membership
 from member.envelopes import CompletedEnvelope
 from member.extensions import sentry
 from member.signature import signature_valid
-from member.utils import CYBERSOURCE_DT_FORMAT
 
 blueprint = Blueprint('public', __name__)
 
