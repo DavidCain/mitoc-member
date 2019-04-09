@@ -250,9 +250,9 @@ def person_to_update(primary_email, all_emails):
                          from_unixtime(0)
                        ) as last_update
                   from people p
-                       left join people_memberships pm on p.id = pm.person_id
-                       left join gear_peopleemails  pe on p.id = pe.person_id
-                       left join people_waivers     pw on p.id = pw.person_id
+                       left join people_memberships  pm on p.id = pm.person_id
+                       left join geardb_peopleemails pe on p.id = pe.person_id
+                       left join people_waivers      pw on p.id = pw.person_id
                  where p.email            in %(all_emails)s
                     or pe.alternate_email in %(all_emails)s
                  group by p.id
