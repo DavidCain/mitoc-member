@@ -4,7 +4,7 @@ python:
 install:
   - pip install -r requirements-dev.txt
 script:
-  - black --skip-string-normalization --check member
+  - black --check member
   - isort -rc --check member
   - flask test
 env:
