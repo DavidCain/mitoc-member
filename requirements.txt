@@ -1,13 +1,13 @@
 blinker==1.4
 Click==7.0
-Flask==0.12.4
+Flask==1.1.1
 Flask-MySQL==1.4.0
 itsdangerous==1.1.0
 Jinja2==2.10.1
 MarkupSafe==1.1.1
-mitoc-const==0.4.0
+mitoc-const==0.4.1
 PyJWT==1.7.1
 PyMySQL==0.9.3
-pytz==2018.9
+pytz==2019.1
 raven==6.10.0
-Werkzeug==0.15.1
+Werkzeug==0.15.5
