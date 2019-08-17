@@ -1,10 +1,8 @@
-from datetime import date, datetime
-
 import unittest
 import unittest.mock
+from datetime import date, datetime
 
-from member import db
-from member import errors
+from member import db, errors
 
 
 class TestDbMethods(unittest.TestCase):

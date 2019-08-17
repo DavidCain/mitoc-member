@@ -4,6 +4,9 @@ disable=
   # Handled by Black
   format,
 
+  # Handled by isort
+  ungrouped-imports,
+
   fixme,
   invalid-name,
   missing-docstring,

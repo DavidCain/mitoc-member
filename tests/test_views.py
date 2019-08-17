@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta
 import unittest
 import unittest.mock
+from datetime import datetime, timedelta
 from urllib.error import URLError
 
 from member.app import create_app

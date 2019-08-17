@@ -9,7 +9,8 @@ env:
   - FLASK_APP=autoapp.py
 script:
   - black --check member tests
-  - isort -rc --check member
+  - isort -rc --check member tests
+  - pylint member tests
   - coverage run -m pytest
 after_success:
   - coveralls
