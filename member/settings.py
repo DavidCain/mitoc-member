@@ -1,9 +1,8 @@
 import os
-from distutils.util import strtobool
 
-# pylint: disable=invalid-name
-verify = os.getenv('VERIFY_CYBERSOURCE_SIGNATURE', 'true')
-VERIFY_CYBERSOURCE_SIGNATURE = strtobool(verify)
+VERIFY_CYBERSOURCE_SIGNATURE = (
+    os.getenv('VERIFY_CYBERSOURCE_SIGNATURE', 'true') == 'true'
+)
 
 CYBERSOURCE_SECRET_KEY = os.getenv(
     'CYBERSOURCE_SECRET_KEY', 'Secret key used to sign CyberSource'
