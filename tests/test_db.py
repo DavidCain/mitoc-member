@@ -15,11 +15,9 @@ class TestDbMethods(unittest.TestCase):
         test_cases = [
             # Normal case: It's the same day in both EST and UTC
             (datetime(2018, 5, 2, 6, 13), date(2018, 5, 2)),
-
             # UTC -5 in February
             (datetime(2018, 2, 2, 5, 57), date(2018, 2, 2)),
             (datetime(2018, 2, 2, 4, 57), date(2018, 2, 1)),
-
             # UTC -4 when DST is observed in the summer
             (datetime(2018, 6, 2, 4, 57), date(2018, 6, 2)),
             (datetime(2018, 6, 2, 3, 57), date(2018, 6, 1)),
@@ -37,8 +35,7 @@ class TestDbMethods(unittest.TestCase):
         current_membership_expires.return_value = membership_expires_on
 
         # The resulting membership lasts one year, starting after the last one
-        self.assertEqual(membership_expires_on,
-                         db.membership_start(37, datetime_paid))
+        self.assertEqual(membership_expires_on, db.membership_start(37, datetime_paid))
 
     @unittest.mock.patch('member.db.current_membership_expires')
     def test_renewed_very_early(self, current_membership_expires):

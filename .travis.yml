@@ -8,7 +8,7 @@ install:
 env:
   - FLASK_APP=autoapp.py
 script:
-  - black --check member
+  - black --check member tests
   - isort -rc --check member
   - coverage run -m pytest
 after_success:

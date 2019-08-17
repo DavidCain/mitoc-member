@@ -19,8 +19,10 @@ def cybersource_now():
 
 class MembershipViewTests(unittest.TestCase):
     def setUp(self):
-        self.patchers = [unittest.mock.patch('member.public.views.db'),
-                         unittest.mock.patch('member.public.views.update_membership')]
+        self.patchers = [
+            unittest.mock.patch('member.public.views.db'),
+            unittest.mock.patch('member.public.views.update_membership'),
+        ]
         self.db, self.update_membership = [p.start() for p in self.patchers]
 
         self.app = create_app()
@@ -45,6 +47,7 @@ class MembershipViewTests(unittest.TestCase):
 
 class TestSignaturesInMembershipView(MembershipViewTests):
     """ Test the signature-handling aspects of the membership view. """
+
     def setUp(self):
         super().setUp()
 
@@ -68,10 +71,10 @@ class TestSignaturesInMembershipView(MembershipViewTests):
             ),
             'signature': '/PtadMBZdyJYtnnZbPa9udh/iIuTTAQoELEkUljpEnk=',
         }
-        #self.valid_payload['signature'] = self.signer.sign(
-        #   self.valid_payload,
-        #   self.valid_payload['signed_field_names'].split(',')
-        #)
+        # self.valid_payload['signature'] = self.signer.sign(
+        #    self.valid_payload,
+        #    self.valid_payload['signed_field_names'].split(',')
+        # )
 
     def test_no_signed_field_names(self):
         """ When 'signed_field_names' is absent, a 401 is returned. """
@@ -115,6 +118,7 @@ class TestSignaturesInMembershipView(MembershipViewTests):
 
 class TestMembershipView(MembershipViewTests):
     """ Test behavior of membership view _not_ relating to signatures. """
+
     def post_signed_data(self, data):
         """ Generate a signature in the payload before posting.
 
@@ -152,11 +156,13 @@ class TestMembershipView(MembershipViewTests):
 
     def test_non_membership_transactions_ignored(self):
         """ Any CyberSource transaction not for membership is ignored. """
-        response = self.post_signed_data({
-            'req_merchant_defined_data1': 'rental',
-            'req_merchant_defined_data3': 'mitoc-member@example.com',
-            'auth_amount': '15.00'
-        })
+        response = self.post_signed_data(
+            {
+                'req_merchant_defined_data1': 'rental',
+                'req_merchant_defined_data3': 'mitoc-member@example.com',
+                'auth_amount': '15.00',
+            }
+        )
         self.assertEqual(response.status_code, 204)
 
     def test_non_acceptance_ignored(self):
@@ -164,13 +170,15 @@ class TestMembershipView(MembershipViewTests):
 
         (This corresponds to payments that were rejected, are in review, etc.)
         """
-        response = self.post_signed_data({
-            'decision': 'REVIEW',
-            'req_merchant_defined_data1': 'membership',
-            'req_merchant_defined_data2': 'MU',
-            'req_merchant_defined_data3': 'mitoc-member@example.com',
-            'auth_amount': '15.00',
-        })
+        response = self.post_signed_data(
+            {
+                'decision': 'REVIEW',
+                'req_merchant_defined_data1': 'membership',
+                'req_merchant_defined_data2': 'MU',
+                'req_merchant_defined_data3': 'mitoc-member@example.com',
+                'auth_amount': '15.00',
+            }
+        )
         self.assertEqual(response.status_code, 204)
 
         self.expect_no_processing()
@@ -193,12 +201,14 @@ class TestMembershipView(MembershipViewTests):
 
         # We submit a valid signature for a membership, but get a 202:
         # the membership has already been processed
-        response = self.post_signed_data({
-            'req_merchant_defined_data1': 'membership',
-            'req_merchant_defined_data2': 'MU',
-            'req_merchant_defined_data3': 'mitoc-member@example.com',
-            'auth_amount': '15.00',
-        })
+        response = self.post_signed_data(
+            {
+                'req_merchant_defined_data1': 'membership',
+                'req_merchant_defined_data2': 'MU',
+                'req_merchant_defined_data3': 'mitoc-member@example.com',
+                'auth_amount': '15.00',
+            }
+        )
         self.assertEqual(response.status_code, 202)
 
         self.expect_no_processing()
@@ -218,7 +228,7 @@ class TestMembershipView(MembershipViewTests):
             'req_merchant_defined_data3': 'mitoc-member@example.com',
             'signed_date_time': '2018-01-24T21:48:32Z',
             'auth_amount': '15.00',
-            'req_amount': '15.00'
+            'req_amount': '15.00',
         }
 
         response = self.post_signed_data(payload)
@@ -228,9 +238,12 @@ class TestMembershipView(MembershipViewTests):
         self.db.add_person.assert_not_called()
 
         # Instead, they were updated
-        datetime_paid = datetime.strptime(payload['signed_date_time'],
-                                          CYBERSOURCE_DT_FORMAT)
-        self.db.add_membership.assert_called_with(person_id, '15.00', datetime_paid, 'MU')
+        datetime_paid = datetime.strptime(
+            payload['signed_date_time'], CYBERSOURCE_DT_FORMAT
+        )
+        self.db.add_membership.assert_called_with(
+            person_id, '15.00', datetime_paid, 'MU'
+        )
 
         # MITOC Trips is notified of the updated membership
         self.update_membership.assert_called_with(
@@ -256,19 +269,22 @@ class TestMembershipView(MembershipViewTests):
             'req_bill_to_surname': 'Beaver',
             'auth_amount': '15.00',
             'req_amount': '15.00',
-            'signed_date_time': '2018-01-24T21:48:32Z'
+            'signed_date_time': '2018-01-24T21:48:32Z',
         }
         response = self.post_signed_data(data=payload)
         self.assertEqual(response.status_code, 201)
 
         # A new person record needs to be created
-        self.db.add_person.assert_called_with(payload['req_bill_to_forename'],
-                                              payload['req_bill_to_surname'],
-                                              'mitoc-member@example.com')
+        self.db.add_person.assert_called_with(
+            payload['req_bill_to_forename'],
+            payload['req_bill_to_surname'],
+            'mitoc-member@example.com',
+        )
 
         # The membership is then inserted for the new person
-        datetime_paid = datetime.strptime(payload['signed_date_time'],
-                                          CYBERSOURCE_DT_FORMAT)
+        datetime_paid = datetime.strptime(
+            payload['signed_date_time'], CYBERSOURCE_DT_FORMAT
+        )
         self.db.add_membership.assert_called_with(128, '15.00', datetime_paid, 'MU')
 
         # MITOC Trips is notified of the new member

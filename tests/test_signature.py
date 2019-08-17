@@ -20,7 +20,7 @@ class TestSecureAcceptanceSigner(unittest.TestCase):
             'signature': '6wI69NZPgm2GtiAEFbnKHnBnsYhqybRaQ8hyXCTKcxM=',
             'signed_field_names': 'name,email',
             'name': 'Dennis',
-            'email': 'dennis@example.com'
+            'email': 'dennis@example.com',
         }
         self.assertTrue(self.signer.verify_request(post_data))
 
