@@ -1,7 +1,0 @@
--r requirements-top-level.txt
-
-# Dev dependencies
-black
-isort
-pylint
-pytest

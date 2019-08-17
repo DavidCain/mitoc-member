@@ -1,11 +1,14 @@
 language: python
 python:
   - "3.6"
+before_install: pip install poetry
 install:
-  - pip install -r requirements-dev.txt
+  - poetry install
+env:
+  - FLASK_APP=autoapp.py
 script:
   - black --check member
   - isort -rc --check member
-  - flask test
-env:
-  - FLASK_APP=autoapp.py
+  - coverage run flask test
+after_success:
+  - coveralls

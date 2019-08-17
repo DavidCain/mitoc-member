@@ -8,3 +8,29 @@ line_length = 88
 known_first_party = "member"
 multi_line_output = 3
 include_trailing_comma = true
+
+[tool.poetry]
+name = "mitoc-member"
+version = "0.1.0"
+description = "Processes MITOC memberships and waivers"
+license = "GPL-3.0"
+readme = "README.md"
+homepage = "https://mitoc-trips.mit.edu"
+repository = "https://github.com/DavidCain/mitoc-member/"
+authors = ["David Cain <davidjosephcain@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+Flask = "^1.0"
+flask-mysql = "^1.0"
+PyJWT = "*"
+pytz = "*"
+raven = { version = "*", extras = ["flask"] }
+click = "*"
+mitoc-const = "^0.4.0"
+
+[tool.poetry.dev-dependencies]
+black = { version = "*", allows-prereleases = true }
+isort = "*"
+pylint = "*"
+pytest = "*"

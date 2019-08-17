@@ -1,7 +1,0 @@
-Flask>1.0
-flask-mysql
-PyJWT
-pytz
-raven[flask]
-click
-mitoc-const>=0.4.0

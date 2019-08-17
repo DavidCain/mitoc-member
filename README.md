@@ -22,17 +22,19 @@ https://mitoc.mit.edu/#join
 
 ## Installation
 
+### Poetry
+This project uses [`poetry`][poetry]. Make sure [`poetry` is installed!][poetry_installation]
+
 ```bash
-python3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-FLASK_APP=autoapp.py flask run
+poetry install
+FLASK_APP=autoapp.py poetry run flask run
 ```
 
 ## Running unit tests
 ```bash
-python3 -m venv test_env
-source test_env/bin/activate
-pip install -r requirements-dev.txt
-FLASK_APP=autoapp.py flask test
+FLASK_APP=autoapp.py poetry run flask test
 ```
+
+
+[poetry]: https://github.com/sdispater/poetry
+[poetry_installation]: https://github.com/sdispater/poetry#installation

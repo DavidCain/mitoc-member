@@ -1,3 +1,8 @@
+# DEPRECATED!
+# This file exists purely to support old versions of `mitoc-ansible`,
+# which still references this file as part of its build process.
+# poetry is the authoritative source of dependencies (see `pyproject.toml` and `poetry.lock`)
+#
 blinker==1.4
 Click==7.0
 Flask==1.1.1
@@ -8,6 +13,6 @@ MarkupSafe==1.1.1
 mitoc-const==0.4.1
 PyJWT==1.7.1
 PyMySQL==0.9.3
-pytz==2019.1
+pytz==2019.2
 raven==6.10.0
 Werkzeug==0.15.5
