@@ -10,6 +10,6 @@ env:
 script:
   - black --check member
   - isort -rc --check member
-  - coverage run -m flask test
+  - coverage run -m pytest
 after_success:
   - coveralls

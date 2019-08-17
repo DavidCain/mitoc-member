@@ -26,7 +26,6 @@ flask-mysql = "^1.0"
 PyJWT = "*"
 pytz = "*"
 raven = { version = "*", extras = ["flask"] }
-click = "*"
 mitoc-const = "^0.4.0"
 
 # Optional dependencies for determining code coverage

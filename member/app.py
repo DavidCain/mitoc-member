@@ -1,6 +1,6 @@
 from flask import Flask, _app_ctx_stack
 
-from member import commands, public
+from member import public
 from member.extensions import mysql, sentry
 
 
@@ -14,7 +14,6 @@ def create_app():
     if sentry:
         sentry.init_app(app)
 
-    app.cli.add_command(commands.test)
     return app
 
 

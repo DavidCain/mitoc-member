@@ -33,7 +33,7 @@ FLASK_APP=autoapp.py poetry run flask run
 
 ## Running unit tests
 ```bash
-FLASK_APP=autoapp.py poetry run flask test
+poetry run pytest
 ```
 
 
