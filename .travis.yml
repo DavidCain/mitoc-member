@@ -4,11 +4,12 @@ python:
 before_install: pip install poetry
 install:
   - poetry install
+  - poetry install --extras=code_coverage
 env:
   - FLASK_APP=autoapp.py
 script:
   - black --check member
   - isort -rc --check member
-  - coverage run flask test
+  - coverage run -m flask test
 after_success:
   - coveralls

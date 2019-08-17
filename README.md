@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/DavidCain/mitoc-member.svg?branch=master)](https://travis-ci.org/DavidCain/mitoc-member)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![Coverage Status](https://coveralls.io/repos/github/DavidCain/mitoc-member/badge.svg)](https://coveralls.io/github/DavidCain/mitoc-member)
 
 # About
 This repository contains endpoints for when a MITOC member creates or renews a

@@ -29,6 +29,15 @@ raven = { version = "*", extras = ["flask"] }
 click = "*"
 mitoc-const = "^0.4.0"
 
+# Optional dependencies for determining code coverage
+# Useful for local development and/or the build
+# (Included here, since extras cannot refer to dev dependencies)
+coverage = { version = "*", optional = true }
+coveralls = { version = "*", optional = true }
+
+[tool.poetry.extras]
+code_coverage = ["coverage", "coveralls"]
+
 [tool.poetry.dev-dependencies]
 black = { version = "*", allows-prereleases = true }
 isort = "*"

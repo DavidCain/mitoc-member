@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = member,tests
+
+[report]
+omit =
+  member/migrations/*
