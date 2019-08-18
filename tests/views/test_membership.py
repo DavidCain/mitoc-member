@@ -151,16 +151,6 @@ class TestMembershipView(MembershipViewTests):
         """
         payload = data.copy()
 
-        # Everything that's not accepting a membership is ignored
-        if 'decision' not in payload:
-            payload['decision'] = 'ACCEPT'
-        if 'req_merchant_defined_data1' not in payload:
-            data['req_merchant_defined_data1'] = 'membership'
-
-        # Timestamps must be present in order to not get a 400
-        if 'signed_date_time' not in payload:
-            payload['signed_date_time'] = cybersource_now()
-
         # Sign the form
         signed_field_names = [key for key in payload]
         payload['signed_field_names'] = ','.join(signed_field_names)
@@ -179,9 +169,11 @@ class TestMembershipView(MembershipViewTests):
         """ Any CyberSource transaction not for membership is ignored. """
         response = self.post_signed_data(
             {
+                'decision': 'ACCEPT',
                 'req_merchant_defined_data1': 'rental',
                 'req_merchant_defined_data3': 'mitoc-member@example.com',
                 'auth_amount': '15.00',
+                'signed_date_time': cybersource_now(),
             }
         )
         self.assertEqual(response.status_code, 204)
@@ -198,6 +190,7 @@ class TestMembershipView(MembershipViewTests):
                 'req_merchant_defined_data2': 'MU',
                 'req_merchant_defined_data3': 'mitoc-member@example.com',
                 'auth_amount': '15.00',
+                'signed_date_time': cybersource_now(),
             }
         )
         self.assertEqual(response.status_code, 204)
@@ -224,10 +217,12 @@ class TestMembershipView(MembershipViewTests):
         # the membership has already been processed
         response = self.post_signed_data(
             {
+                'decision': 'ACCEPT',
                 'req_merchant_defined_data1': 'membership',
                 'req_merchant_defined_data2': 'MU',
                 'req_merchant_defined_data3': 'mitoc-member@example.com',
                 'auth_amount': '15.00',
+                'signed_date_time': cybersource_now(),
             }
         )
         self.assertEqual(response.status_code, 202)
@@ -244,6 +239,7 @@ class TestMembershipView(MembershipViewTests):
         person_id = self.configure_normal_update()
 
         payload = {
+            'decision': 'ACCEPT',
             'req_merchant_defined_data1': 'membership',
             'req_merchant_defined_data2': 'MU',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
@@ -283,6 +279,7 @@ class TestMembershipView(MembershipViewTests):
         self.db.add_membership.return_value = (128, one_year_later())
 
         payload = {
+            'decision': 'ACCEPT',
             'req_merchant_defined_data1': 'membership',
             'req_merchant_defined_data2': 'MU',
             'req_merchant_defined_data3': 'mitoc-member@example.com',
