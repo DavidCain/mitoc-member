@@ -1,6 +1,8 @@
 import unittest
 from contextlib import contextmanager
 from datetime import datetime
+from http.client import HTTPResponse
+from unittest import mock
 
 import jwt
 
@@ -8,7 +10,13 @@ from member.app import create_app
 from member.emails import update_membership
 
 
-class UpdateMembershipTests(unittest.TestCase):
+class UrlopenHelpers(unittest.TestCase):
+    """ Provide some helpers to mocking `urlopen`.
+
+    This service aims to be as small as possible, so we don't have `requests`.
+    We just instead use the standard library!
+    """
+
     def setUp(self):
         self.urlopen_patcher = unittest.mock.patch('member.emails.urlopen')
         self.urlopen = self.urlopen_patcher.start()
@@ -19,15 +27,31 @@ class UpdateMembershipTests(unittest.TestCase):
     def tearDown(self):
         self.urlopen_patcher.stop()
 
-    def inspect_request(self, expected_payload):
+    @contextmanager
+    def expect_request(self, expected_url, expected_payload, method='POST'):
+        """ Expect a single request to the URL, with payload & signed JWT.
+
+        Yields a mocked response that the caller can use to tweak as they see fit.
+        """
+        response = mock.MagicMock(spec=HTTPResponse)
+
+        with self.app.app_context():
+            self.urlopen.side_effect = self._inspect(
+                expected_url, expected_payload, method, response
+            )
+            yield response
+
+        # `_inspect()` will make sure called args were correct.
+        # However, we need to make sure it was called at least once!
+        self.urlopen.assert_called_once()
+
+    def _inspect(self, expected_url, expected_payload, method, response=None):
         """ Ensure that the request to `mitoc-trips` is properly formed. """
 
         @contextmanager
         def inspect(request):
-            self.assertEqual(request.method, 'POST')
-            self.assertEqual(
-                request.full_url, 'https://mitoc-trips.mit.edu/data/membership/'
-            )
+            self.assertEqual(request.method, method)
+            self.assertEqual(request.full_url, expected_url)
 
             authorization = request.get_header('Authorization')
             self.assertTrue(authorization.startswith('Bearer: '))
@@ -40,27 +64,30 @@ class UpdateMembershipTests(unittest.TestCase):
             payload.pop('exp')  # This claim changes dynamically, we needn't test here
             self.assertEqual(payload, expected_payload)
 
-            # The response object returns an empty JSON object
-            response = unittest.mock.MagicMock()
-            response.read.return_value = '{}'
-            yield response
+            yield response or mock.MagicMock(spec=HTTPResponse)
 
         return inspect
 
+
+class UpdateMembershipTests(UrlopenHelpers, unittest.TestCase):
     def test_update_membership(self):
         """ When updating just a membership, we send that via JWT. """
         expires = datetime(2018, 9, 24).date()
-        self.urlopen.side_effect = self.inspect_request(
-            {'email': 'tim@mit.edu', 'membership_expires': '2018-09-24'}
-        )
-        with self.app.app_context():
-            update_membership('tim@mit.edu', membership_expires=expires)
+        with self.expect_request(
+            'https://mitoc-trips.mit.edu/data/membership/',
+            {'email': 'tim@mit.edu', 'membership_expires': '2018-09-24'},
+        ) as response:
+            response.read.return_value = '{}'
+            ret = update_membership('tim@mit.edu', membership_expires=expires)
+        self.assertEqual(ret, {})
 
     def test_update_waiver(self):
         """ When updating just a waiver, we send that via JWT. """
         expires = datetime(2017, 2, 28).date()
-        self.urlopen.side_effect = self.inspect_request(
-            {'email': 'tim@mit.edu', 'waiver_expires': '2017-02-28'}
-        )
-        with self.app.app_context():
-            update_membership('tim@mit.edu', waiver_expires=expires)
+        with self.expect_request(
+            'https://mitoc-trips.mit.edu/data/membership/',
+            {'email': 'tim@mit.edu', 'waiver_expires': '2017-02-28'},
+        ) as response:
+            response.read.return_value = '{}'
+            ret = update_membership('tim@mit.edu', waiver_expires=expires)
+        self.assertEqual(ret, {})
