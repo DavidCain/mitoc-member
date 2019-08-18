@@ -3,11 +3,10 @@ from urllib.error import URLError
 
 from flask import Blueprint, current_app, json, request
 
-from member import db
+from member import db, extensions
 from member.cybersource import CYBERSOURCE_DT_FORMAT
 from member.emails import other_verified_emails, update_membership
 from member.envelopes import CompletedEnvelope
-from member.extensions import sentry
 from member.signature import signature_valid
 
 blueprint = Blueprint('public', __name__)
@@ -56,8 +55,8 @@ def add_membership():
     try:
         update_membership(primary, membership_expires=expires)
     except URLError:
-        if sentry:
-            sentry.captureException()
+        if extensions.sentry:
+            extensions.sentry.captureException()
 
     return json.jsonify(), 201
 
@@ -98,7 +97,7 @@ def add_waiver():
     try:
         update_membership(primary, waiver_expires=expires)
     except URLError:
-        if sentry:
-            sentry.captureException()
+        if extensions.sentry:
+            extensions.sentry.captureException()
 
     return json.jsonify(), 201
