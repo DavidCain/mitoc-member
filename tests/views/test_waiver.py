@@ -167,3 +167,23 @@ class ApiDownTests(WaiverTests):
         sentry.captureException.assert_called_once()
         self.assertTrue(resp.is_json)
         self.assertEqual(resp.status_code, 201)
+
+    @mock.patch.object(views, 'update_membership')
+    def test_mitoc_trips_api_down_but_no_sentry(self, update_membership):
+        """ If Sentry is not configured, the route still succeeds. """
+        update_membership.side_effect = URLError("API is down!")
+
+        all_emails = ['tim@mit.edu']
+        with self._first_waiver('tim@mit.edu', all_emails) as (db, verified_emails):
+            with mock.patch.object(views, 'extensions') as view_extensions:
+                view_extensions.sentry = None
+                resp = self.client.post('/members/waiver', data=self._waiver_data)
+
+        # This request goes through all the usual steps!
+        verified_emails.assert_called_once_with('tim@mit.edu')  # (from the XML)
+        db.add_person.assert_called_once_with('Tim', 'Beaver', 'tim@mit.edu')
+        db.add_waiver.assert_called_once_with(self.person_id, self.TIME_SIGNED)
+        db.update_affiliation.assert_called_once_with(self.person_id, 'Non-affiliate')
+
+        self.assertTrue(resp.is_json)
+        self.assertEqual(resp.status_code, 201)

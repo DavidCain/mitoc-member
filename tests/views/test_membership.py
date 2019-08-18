@@ -134,6 +134,25 @@ class ApiDownTests(MembershipViewTests):
         with mock.patch.object(extensions, 'sentry') as sentry:
             response = self.client.post('/members/membership', data=self.valid_payload)
             sentry.captureException.assert_called_once()
+
+        self.assertTrue(response.is_json)
+        self.assertEqual(response.status_code, 201)
+
+    @mock.patch.object(views, 'other_verified_emails')
+    def test_mitoc_trips_api_down_but_no_sentry(self, verified_emails):
+        """ If Sentry is not configured, the route still succeeds. """
+        email = ['mitoc-member@example.com']
+        verified_emails.return_value = (email, [email])
+
+        self.configure_normal_update()
+
+        self.update_membership.side_effect = URLError("API is down!")
+
+        with mock.patch.object(views, 'extensions') as view_extensions:
+            view_extensions.sentry = None
+            response = self.client.post('/members/membership', data=self.valid_payload)
+
+        self.assertTrue(response.is_json)
         self.assertEqual(response.status_code, 201)
 
 
