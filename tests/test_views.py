@@ -299,6 +299,69 @@ class TestMembershipView(MembershipViewTests):
         )
 
 
+class TestMembershipWithoutSignatureVerificationView(MembershipViewTests):
+    """ Test processing a membership _without_ verifying the signature.
+
+    We support this behavior in the first place since MITOC does not actually
+    have access to the secret key that could be used to verify signatures (with
+    this key, we could do some other things that MIT does not want us to be
+    able to do -- and they own the account).
+
+    Thankfully, we're able to employ other security measures to validate the
+    source of the data, even if we can't validate contents' signature.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.app.config['VERIFY_CYBERSOURCE_SIGNATURE'] = False
+
+    def test_bad_signature_still_works(self):
+        """ A valid payload with a bad signature still works. """
+        payload = {
+            'decision': 'ACCEPT',
+            'req_merchant_defined_data1': 'membership',
+            'req_merchant_defined_data2': 'MU',
+            'req_merchant_defined_data3': 'mitoc-member@example.com',
+            'signed_date_time': '2018-01-24T21:48:32Z',
+            'auth_amount': '15.00',
+            'req_amount': '15.00',
+            # The signed fields name are correctly referenced, but we have a bad signature!
+            'signed_field_names': ','.join(
+                [
+                    'decision'
+                    'req_merchant_defined_data1'
+                    'req_merchant_defined_data2'
+                    'req_merchant_defined_data3'
+                    'signed_date_time'
+                    'auth_amount'
+                    'req_amount'
+                ]
+            ),
+            'signature': 'this-is-not-actually-valid!',
+        }
+
+        person_id = self.configure_normal_update()  # Make it as if this person exists
+
+        all_emails = ('mitoc-member@example.com', 'same-person@example.com')
+        with mock.patch.object(views, 'other_verified_emails') as verified_emails:
+            verified_emails.return_value = ('mitoc-member@example.com', all_emails)
+            response = self.client.post('/members/membership', data=payload)
+
+        # We successfully processed the membership update!
+        self.assertEqual(response.status_code, 201)
+        datetime_paid = datetime.strptime(
+            payload['signed_date_time'], CYBERSOURCE_DT_FORMAT
+        )
+        self.db.add_membership.assert_called_with(
+            person_id, '15.00', datetime_paid, 'MU'
+        )
+
+        # MITOC Trips is notified of the updated membership
+        self.update_membership.assert_called_with(
+            'mitoc-member@example.com', membership_expires=one_year_later()
+        )
+
+
 # TODO: Rather than mocking out `CompletedEnvelope`, do two things:
 # 1. Build a small collection of valid XML waivers in different states
 # 2. Expand coverage in `test_envelope` to handle these various envelopes
