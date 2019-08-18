@@ -1,7 +1,6 @@
 from flask import Flask
 
-from member import db, public
-from member.extensions import mysql, sentry
+from member import db, extensions, public
 
 
 def create_app():
@@ -10,8 +9,12 @@ def create_app():
     app.register_blueprint(public.views.blueprint)
     app.teardown_appcontext(db.close_db)
 
-    mysql.init_app(app)
-    if sentry:
-        sentry.init_app(app)
+    _initialize_extensions(app)
 
     return app
+
+
+def _initialize_extensions(app):
+    extensions.mysql.init_app(app)
+    if extensions.sentry:
+        extensions.sentry.init_app(app)
