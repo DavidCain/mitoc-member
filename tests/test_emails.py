@@ -7,7 +7,7 @@ from unittest import mock
 import jwt
 
 from member.app import create_app
-from member.emails import update_membership
+from member.emails import other_verified_emails, update_membership
 
 
 class UrlopenHelpers(unittest.TestCase):
@@ -91,3 +91,17 @@ class UpdateMembershipTests(UrlopenHelpers, unittest.TestCase):
             response.read.return_value = '{}'
             ret = update_membership('tim@mit.edu', waiver_expires=expires)
         self.assertEqual(ret, {})
+
+
+class OtherVerifiedEmailsTests(UrlopenHelpers, unittest.TestCase):
+    def test_fetch_verified_emails(self):
+        with self.expect_request(
+            'https://mitoc-trips.mit.edu/data/verified_emails/',
+            {'email': 'tim@mit.edu'},
+            method='GET',
+        ) as response:
+            response.read.return_value = '{"primary": "tim@mit.edu", "emails": ["tim@mit.edu", "tim@csail.mit.edu"]}'
+            primary, all_emails = other_verified_emails('tim@mit.edu')
+
+        self.assertEqual(primary, 'tim@mit.edu')
+        self.assertEqual(all_emails, ['tim@mit.edu', 'tim@csail.mit.edu'])

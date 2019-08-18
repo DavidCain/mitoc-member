@@ -25,7 +25,7 @@ def other_verified_emails(email_address):
     each request with a secret key. The API endpoint will reject our request
     without a valid signature.
     """
-    request = Request('https://mitoc-trips.mit.edu/data/verified_emails/')
+    request = Request('https://mitoc-trips.mit.edu/data/verified_emails/', method='GET')
     request.add_header('Authorization', bearer_jwt(email=email_address))
     with urlopen(request) as response:
         data = json.loads(response.read())
