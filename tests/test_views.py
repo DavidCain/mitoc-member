@@ -1,12 +1,17 @@
 import unittest
-import unittest.mock
-from datetime import datetime, timedelta
+from contextlib import contextmanager
+from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
+from unittest import mock
 from urllib.error import URLError
 
 from member.app import create_app
 from member.cybersource import CYBERSOURCE_DT_FORMAT
+from member.envelopes import CompletedEnvelope
 from member.public import views
 from member.signature import SecureAcceptanceSigner
+
+DIR_PATH = Path(__file__).resolve().parent
 
 
 def one_year_later():
@@ -21,8 +26,8 @@ def cybersource_now():
 class MembershipViewTests(unittest.TestCase):
     def setUp(self):
         self.patchers = [
-            unittest.mock.patch.object(views, 'db'),
-            unittest.mock.patch.object(views, 'update_membership'),
+            mock.patch.object(views, 'db'),
+            mock.patch.object(views, 'update_membership'),
         ]
         self.db, self.update_membership = [p.start() for p in self.patchers]
 
@@ -85,7 +90,7 @@ class TestSignaturesInMembershipView(MembershipViewTests):
         response = self.client.post('/members/membership', data=payload)
         self.assertEqual(response.status_code, 401)
 
-    @unittest.mock.patch.object(views, 'other_verified_emails')
+    @mock.patch.object(views, 'other_verified_emails')
     def test_valid_signature(self, verified_emails):
         """ When a valid signature is included, the route succeeds. """
         all_emails = ['mitoc-member@example.com']
@@ -103,7 +108,7 @@ class TestSignaturesInMembershipView(MembershipViewTests):
         response = self.client.post('/members/membership', data=payload)
         self.assertEqual(response.status_code, 401)
 
-    @unittest.mock.patch.object(views, 'other_verified_emails')
+    @mock.patch.object(views, 'other_verified_emails')
     def test_mitoc_trips_api_down(self, verified_emails):
         """ If the MITOC Trips API is down, the route still succeeds. """
         email = ['mitoc-member@example.com']
@@ -184,7 +189,7 @@ class TestMembershipView(MembershipViewTests):
 
         self.expect_no_processing()
 
-    @unittest.mock.patch.object(views, 'other_verified_emails')
+    @mock.patch.object(views, 'other_verified_emails')
     def test_duplicate_requests_handled(self, verified_emails):
         """ Test idempotency of the membership route.
 
@@ -214,7 +219,7 @@ class TestMembershipView(MembershipViewTests):
 
         self.expect_no_processing()
 
-    @unittest.mock.patch.object(views, 'other_verified_emails')
+    @mock.patch.object(views, 'other_verified_emails')
     def test_update_membership(self, verified_emails):
         """ Updating an existing membership works. """
         # The Trips web site gives all emails that we use to look up the user
@@ -251,7 +256,7 @@ class TestMembershipView(MembershipViewTests):
             'mitoc-member@example.com', membership_expires=one_year_later()
         )
 
-    @unittest.mock.patch.object(views, 'other_verified_emails')
+    @mock.patch.object(views, 'other_verified_emails')
     def test_new_membership(self, verified_emails):
         """ We create a new person record when somebody is new to MITOC. """
         # The Trips web site gives all emails that we use to look up the user
@@ -292,3 +297,87 @@ class TestMembershipView(MembershipViewTests):
         self.update_membership.assert_called_with(
             'mitoc-member@example.com', membership_expires=one_year_later()
         )
+
+
+# TODO: Rather than mocking out `CompletedEnvelope`, do two things:
+# 1. Build a small collection of valid XML waivers in different states
+# 2. Expand coverage in `test_envelope` to handle these various envelopes
+# 3. Support full end-to-end testing here
+class TestWaiverView(unittest.TestCase):
+    """ Test behavior of the waiver-processing view.
+
+    NOTE: Currently, this route directly hits database methods.
+    In a future world, it will instead hit the geardb API.
+    """
+
+    def setUp(self):
+        self.app = create_app()
+        self.client = self.app.test_client()
+        waiver_path = DIR_PATH / 'completed_waiver.xml'
+        with waiver_path.open() as waiver:
+            self._waiver_data = waiver.read()
+
+    @staticmethod
+    @contextmanager
+    def _mocked_env():
+        """ Mock an envelope, so we might simulate its various public methods. """
+        mocked_envelope = mock.Mock(spec=CompletedEnvelope)
+
+        def verify_but_return_mock(data):
+            """ Ensure that the data is a valid envelope, but ignore it & return a mock. """
+            # This will raise an exception if the data is not a valid envelope!
+            CompletedEnvelope(data)  # Will r
+            return mocked_envelope
+
+        with mock.patch.object(views, 'CompletedEnvelope', autospec=True) as env:
+            env.side_effect = verify_but_return_mock
+            yield mocked_envelope
+
+    def test_post_not_yet_completed(self):
+        """ Waivers awaiting a guardian's signature should not be processed. """
+        with self._mocked_env() as env:
+            env.completed = False
+            resp = self.client.post('/members/waiver', data=self._waiver_data)
+        self.assertEqual(resp.status_code, 204)
+        self.assertTrue(resp.is_json)
+
+    @mock.patch.object(views, 'db')
+    @mock.patch.object(views, 'update_membership')
+    def test_completed_waiver_not_in_db(self, update_membership, db):
+        """ Test behavior on a completed waiver for somebody not in our db! """
+        TIME_SIGNED = datetime(2018, 11, 10, 23, 41, 6, 937000, tzinfo=timezone.utc)
+        VALID_UNTIL = date(2019, 11, 20)
+
+        # Mock as if Tim has two emails!
+        primary = 'tim@mit.edu'
+        all_emails = ['tim@mit.edu', 'tim@csail.mit.edu']
+
+        # No need to mock an envelope, since we have a real completed env!
+        with mock.patch.object(views, 'other_verified_emails') as verified_emails:
+            verified_emails.return_value = (primary, all_emails)
+            db.person_to_update.return_value = None  # Not in db!
+            db.already_added_waiver.return_value = False
+            db.add_person.return_value = 37  # PK for Tim's new record
+            db.add_waiver.return_value = (42, VALID_UNTIL)
+
+            resp = self.client.post('/members/waiver', data=self._waiver_data)
+
+        verified_emails.assert_called_once_with('tim@mit.edu')  # (from the XML)
+
+        # Because Tim was not in the database, we added him!
+        db.person_to_update.assert_called_once_with(primary, all_emails)
+        db.add_person.assert_called_once_with('Tim', 'Beaver', 'tim@mit.edu')
+
+        # We checked if we'd already inserted Tim, then we add his waiver!
+        db.already_added_waiver.assert_called_once_with(37, TIME_SIGNED)
+        db.add_waiver.assert_called_once_with(37, TIME_SIGNED)
+
+        db.update_affiliation.assert_called_once_with(37, 'Non-affiliate')
+
+        # Finally, we let MITOC Trips know that Tim's account was updated
+        update_membership.assert_called_once_with(
+            'tim@mit.edu', waiver_expires=VALID_UNTIL
+        )
+
+        self.assertTrue(resp.is_json)
+        self.assertEqual(resp.status_code, 201)
