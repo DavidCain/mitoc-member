@@ -77,6 +77,23 @@ class TestWaiverParser(unittest.TestCase):
         self.env = load_envelope()
         self.assertTrue(self.env.completed)
 
+    def test_tab_status(self):
+        with self.assertRaises(ValueError):
+            self.env.tab_status("This tab does not exist")
+
+    def test_time_signed_incomplete_envelope(self):
+        # TODO: Don't mock, actually load a (valid) incomplete envelope
+        def mock_awaiting_guardian(hierarchy):
+            assert hierarchy == ['EnvelopeStatus', 'Status']
+            return 'Waiting for Others'
+
+        incomplete_env = load_envelope()
+        with mock.patch.object(incomplete_env, 'get_val') as get_val:
+            get_val.side_effect = mock_awaiting_guardian
+
+            with self.assertRaises(ValueError):
+                incomplete_env.time_signed  # pylint:disable=pointless-statement
+
     def test_time_signed(self):
         """ The time signed is parsed & converted to UTC. """
         utc_time_signed = datetime(2018, 11, 10, 23, 41, 6, 937000, tzinfo=timezone.utc)
