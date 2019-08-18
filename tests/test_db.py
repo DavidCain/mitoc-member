@@ -6,7 +6,7 @@ from member import db, errors
 
 
 class TestDbMethods(unittest.TestCase):
-    @unittest.mock.patch('member.db.current_membership_expires')
+    @unittest.mock.patch.object(db, 'current_membership_expires')
     def test_new_member_expiration(self, current_membership_expires):
         """ New memberships start on the date of payment in Boston. """
         current_membership_expires.return_value = None
@@ -24,7 +24,7 @@ class TestDbMethods(unittest.TestCase):
         for datetime_paid, expected in test_cases:
             self.assertEqual(expected, db.membership_start(37, datetime_paid))
 
-    @unittest.mock.patch('member.db.current_membership_expires')
+    @unittest.mock.patch.object(db, 'current_membership_expires')
     def test_renewed_near_end(self, current_membership_expires):
         """ Renewing at the end of a membership adds 12 full months. """
         # It's early January, and our membership expires in two weeks
@@ -35,7 +35,7 @@ class TestDbMethods(unittest.TestCase):
         # The resulting membership lasts one year, starting after the last one
         self.assertEqual(membership_expires_on, db.membership_start(37, datetime_paid))
 
-    @unittest.mock.patch('member.db.current_membership_expires')
+    @unittest.mock.patch.object(db, 'current_membership_expires')
     def test_renewed_very_early(self, current_membership_expires):
         """ Renewing too early adds 12 months from the date renewed. """
         # In January, we're renewing a membership that expires in June
@@ -47,7 +47,7 @@ class TestDbMethods(unittest.TestCase):
         # Our resulting membership will only be valid until next January
         self.assertEqual(date_paid_EST, db.membership_start(37, datetime_paid))
 
-    @unittest.mock.patch('member.db.get_db')
+    @unittest.mock.patch.object(db, 'get_db')
     def test_unknown_affiliation_given(self, get_db):
         """ Make sure that the affiliation we see is valid. """
         cursor = unittest.mock.Mock()
@@ -56,7 +56,7 @@ class TestDbMethods(unittest.TestCase):
             db.add_membership(42, '20.00', datetime.now(), 'MX')
         cursor.execute.assert_not_called()
 
-    @unittest.mock.patch('member.db.get_db')
+    @unittest.mock.patch.object(db, 'get_db')
     def test_insufficient_payment_given(self, get_db):
         """ Ensure that the payment received was the amount expected. """
         cursor = unittest.mock.Mock()
@@ -65,7 +65,7 @@ class TestDbMethods(unittest.TestCase):
             db.add_membership(42, '1.23', datetime.now(), 'NA')
         cursor.execute.assert_not_called()
 
-    @unittest.mock.patch('member.db.get_db')
+    @unittest.mock.patch.object(db, 'get_db')
     def test_old_payment_values(self, get_db):
         """ Ensure that the old annual dues are not processed. """
         cursor = unittest.mock.Mock()

@@ -5,6 +5,7 @@ from urllib.error import URLError
 
 from member.app import create_app
 from member.cybersource import CYBERSOURCE_DT_FORMAT
+from member.public import views
 from member.signature import SecureAcceptanceSigner
 
 
@@ -20,8 +21,8 @@ def cybersource_now():
 class MembershipViewTests(unittest.TestCase):
     def setUp(self):
         self.patchers = [
-            unittest.mock.patch('member.public.views.db'),
-            unittest.mock.patch('member.public.views.update_membership'),
+            unittest.mock.patch.object(views, 'db'),
+            unittest.mock.patch.object(views, 'update_membership'),
         ]
         self.db, self.update_membership = [p.start() for p in self.patchers]
 
@@ -84,7 +85,7 @@ class TestSignaturesInMembershipView(MembershipViewTests):
         response = self.client.post('/members/membership', data=payload)
         self.assertEqual(response.status_code, 401)
 
-    @unittest.mock.patch('member.public.views.other_verified_emails')
+    @unittest.mock.patch.object(views, 'other_verified_emails')
     def test_valid_signature(self, verified_emails):
         """ When a valid signature is included, the route succeeds. """
         all_emails = ['mitoc-member@example.com']
@@ -102,7 +103,7 @@ class TestSignaturesInMembershipView(MembershipViewTests):
         response = self.client.post('/members/membership', data=payload)
         self.assertEqual(response.status_code, 401)
 
-    @unittest.mock.patch('member.public.views.other_verified_emails')
+    @unittest.mock.patch.object(views, 'other_verified_emails')
     def test_mitoc_trips_api_down(self, verified_emails):
         """ If the MITOC Trips API is down, the route still succeeds. """
         email = ['mitoc-member@example.com']
@@ -183,7 +184,7 @@ class TestMembershipView(MembershipViewTests):
 
         self.expect_no_processing()
 
-    @unittest.mock.patch('member.public.views.other_verified_emails')
+    @unittest.mock.patch.object(views, 'other_verified_emails')
     def test_duplicate_requests_handled(self, verified_emails):
         """ Test idempotency of the membership route.
 
@@ -213,7 +214,7 @@ class TestMembershipView(MembershipViewTests):
 
         self.expect_no_processing()
 
-    @unittest.mock.patch('member.public.views.other_verified_emails')
+    @unittest.mock.patch.object(views, 'other_verified_emails')
     def test_update_membership(self, verified_emails):
         """ Updating an existing membership works. """
         # The Trips web site gives all emails that we use to look up the user
@@ -250,7 +251,7 @@ class TestMembershipView(MembershipViewTests):
             'mitoc-member@example.com', membership_expires=one_year_later()
         )
 
-    @unittest.mock.patch('member.public.views.other_verified_emails')
+    @unittest.mock.patch.object(views, 'other_verified_emails')
     def test_new_membership(self, verified_emails):
         """ We create a new person record when somebody is new to MITOC. """
         # The Trips web site gives all emails that we use to look up the user
