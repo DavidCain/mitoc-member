@@ -124,6 +124,22 @@ class TestWaiverView(WaiverTests):
         self.assertTrue(resp.is_json)
         self.assertEqual(resp.status_code, 201)
 
+    def test_already_added_waiver(self):
+        """ If the waiver is already present in the database, we don't re-submit. """
+        # No need to mock an envelope, since we submit valid envelopes!
+        with mock.patch.object(views, 'other_verified_emails') as verified_emails:
+            verified_emails.return_value = ('tim@mit.edu', ['tim@mit.edu'])
+            with mock.patch.object(views, 'db') as db:
+                db.person_to_update.return_value = 37
+                db.already_added_waiver.return_value = True
+                resp = self.client.post('/members/waiver', data=self._waiver_data)
+
+        self.assertTrue(resp.is_json)
+        self.assertEqual(resp.status_code, 204)
+
+        db.add_person.assert_not_called()
+        db.add_waiver.assert_not_called()
+
 
 class ApiDownTests(WaiverTests):
     def setUp(self):
