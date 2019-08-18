@@ -11,25 +11,15 @@ from member.app import create_app
 from member.envelopes import CompletedEnvelope
 from member.public import views
 
+from ..utils import create_app_with_env_vars
+
 DIR_PATH = Path(__file__).resolve().parent.parent
 DUMMY_RAVEN_DSN = 'https://aa11bb22cc33dd44ee55ff6601234560@sentry.io/104648'
 
 
-# TODO: Rather than mocking out `CompletedEnvelope`, do two things:
-# 1. Build a small collection of valid XML waivers in different states
-# 2. Expand coverage in `test_envelope` to handle these various envelopes
-# 3. Support full end-to-end testing here
-class TestWaiverView(unittest.TestCase):
-    """ Test behavior of the waiver-processing view.
-
-    NOTE: Currently, this route directly hits database methods.
-    In a future world, it will instead hit the geardb API.
-    """
-
+class WaiverTests(unittest.TestCase):
     def setUp(self):
-        with mock.patch.dict('os.environ', {'RAVEN_DSN': DUMMY_RAVEN_DSN}):
-            reload(extensions)  # Sentry is configured on import!
-            self.app = create_app()
+        self.app = create_app()
 
         self.client = self.app.test_client()
 
@@ -76,6 +66,18 @@ class TestWaiverView(unittest.TestCase):
             env.side_effect = verify_but_return_mock
             yield mocked_envelope
 
+
+# TODO: Rather than mocking out `CompletedEnvelope`, do two things:
+# 1. Build a small collection of valid XML waivers in different states
+# 2. Expand coverage in `test_envelope` to handle these various envelopes
+# 3. Support full end-to-end testing here
+class TestWaiverView(WaiverTests):
+    """ Test behavior of the waiver-processing view.
+
+    NOTE: Currently, this route directly hits database methods.
+    In a future world, it will instead hit the geardb API.
+    """
+
     def test_post_not_yet_completed(self):
         """ Waivers awaiting a guardian's signature should not be processed. """
         # Disable Sentry initialization to get around a frustrating deprecation warning
@@ -121,6 +123,13 @@ class TestWaiverView(unittest.TestCase):
 
         self.assertTrue(resp.is_json)
         self.assertEqual(resp.status_code, 201)
+
+
+class ApiDownTests(WaiverTests):
+    def setUp(self):
+        super().setUp()
+        self.app = create_app_with_env_vars({'RAVEN_DSN': DUMMY_RAVEN_DSN})
+        self.client = self.app.test_client()
 
     @mock.patch.object(views, 'update_membership')
     def test_mitoc_trips_api_down(self, update_membership):

@@ -1,6 +1,5 @@
 import unittest
 from datetime import datetime, timedelta
-from importlib import reload
 from pathlib import Path
 from unittest import mock
 from urllib.error import URLError
@@ -10,6 +9,8 @@ from member.app import create_app
 from member.cybersource import CYBERSOURCE_DT_FORMAT
 from member.public import views
 from member.signature import SecureAcceptanceSigner
+
+from ..utils import create_app_with_env_vars
 
 DIR_PATH = Path(__file__).resolve().parent
 DUMMY_RAVEN_DSN = 'https://aa11bb22cc33dd44ee55ff6601234560@sentry.io/104648'
@@ -25,6 +26,31 @@ def cybersource_now():
 
 
 class MembershipViewTests(unittest.TestCase):
+    # A completely valid payload, with appropriate signature, produced like so:
+    # valid_payload['signature'] = self.signer.sign(
+    #    valid_payload,
+    #    valid_payload['signed_field_names'].split(',')
+    # )
+    valid_payload = {
+        'decision': 'ACCEPT',
+        'req_merchant_defined_data1': 'membership',
+        'req_merchant_defined_data2': 'MU',
+        'req_merchant_defined_data3': 'mitoc-member@example.com',
+        'signed_date_time': '2018-05-17T19:20:30Z',
+        'auth_amount': '15.00',
+        'req_amount': '15.00',
+        'signed_field_names': (
+            'decision,'
+            'req_merchant_defined_data1,'
+            'req_merchant_defined_data2,'
+            'req_merchant_defined_data3,'
+            'signed_date_time,'
+            'auth_amount,'
+            'req_amount'
+        ),
+        'signature': '/PtadMBZdyJYtnnZbPa9udh/iIuTTAQoELEkUljpEnk=',
+    }
+
     def setUp(self):
         self.patchers = [
             mock.patch.object(views, 'db'),
@@ -32,10 +58,7 @@ class MembershipViewTests(unittest.TestCase):
         ]
         self.db, self.update_membership = [p.start() for p in self.patchers]
 
-        with mock.patch.dict('os.environ', {'RAVEN_DSN': DUMMY_RAVEN_DSN}):
-            reload(extensions)  # Sentry is configured on import!
-            self.app = create_app()
-
+        self.app = create_app()
         self.client = self.app.test_client()
         self.app.config['CYBERSOURCE_SECRET_KEY'] = 'secret-key'
         self.signer = SecureAcceptanceSigner('secret-key')
@@ -58,37 +81,9 @@ class MembershipViewTests(unittest.TestCase):
 class TestSignaturesInMembershipView(MembershipViewTests):
     """ Test the signature-handling aspects of the membership view. """
 
-    def setUp(self):
-        super().setUp()
-
-        # A completely valid payload, with appropriate signature
-        self.valid_payload = {
-            'decision': 'ACCEPT',
-            'req_merchant_defined_data1': 'membership',
-            'req_merchant_defined_data2': 'MU',
-            'req_merchant_defined_data3': 'mitoc-member@example.com',
-            'signed_date_time': '2018-05-17T19:20:30Z',
-            'auth_amount': '15.00',
-            'req_amount': '15.00',
-            'signed_field_names': (
-                'decision,'
-                'req_merchant_defined_data1,'
-                'req_merchant_defined_data2,'
-                'req_merchant_defined_data3,'
-                'signed_date_time,'
-                'auth_amount,'
-                'req_amount'
-            ),
-            'signature': '/PtadMBZdyJYtnnZbPa9udh/iIuTTAQoELEkUljpEnk=',
-        }
-        # self.valid_payload['signature'] = self.signer.sign(
-        #    self.valid_payload,
-        #    self.valid_payload['signed_field_names'].split(',')
-        # )
-
     def test_no_signed_field_names(self):
         """ When 'signed_field_names' is absent, a 401 is returned. """
-        payload = self.valid_payload
+        payload = self.valid_payload.copy()
         payload.pop('signed_field_names')
 
         response = self.client.post('/members/membership', data=payload)
@@ -107,10 +102,24 @@ class TestSignaturesInMembershipView(MembershipViewTests):
 
     def test_invalid_signature(self):
         """ We 401 when signed names are present, but signature is invalid. """
-        payload = self.valid_payload
+        payload = self.valid_payload.copy()
         payload['signature'] = 'this-signature-is-invalid'
         response = self.client.post('/members/membership', data=payload)
         self.assertEqual(response.status_code, 401)
+
+
+class ApiDownTests(MembershipViewTests):
+    def setUp(self):
+        super().setUp()
+
+        # Create a new app where Sentry is activated!
+        # (We'll mock the object so that real API calls aren't attepmted)
+        self.app = create_app_with_env_vars(
+            {'RAVEN_DSN': DUMMY_RAVEN_DSN, 'CYBERSOURCE_SECRET_KEY': 'secret-key'}
+        )
+        # Ensure that our app's configuration came straight from the env var
+        self.assertEqual(self.app.config['CYBERSOURCE_SECRET_KEY'], 'secret-key')
+        self.client = self.app.test_client()
 
     @mock.patch.object(views, 'other_verified_emails')
     def test_mitoc_trips_api_down(self, verified_emails):
