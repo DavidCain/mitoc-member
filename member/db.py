@@ -25,6 +25,13 @@ def get_db():
     return top.conn
 
 
+def close_db(_exception):
+    """Closes the database again at the end of the request."""
+    top = _app_ctx_stack.top
+    if hasattr(top, 'conn'):
+        top.conn.close()
+
+
 def commit():
     """ Commit the current transaction. """
     get_db().commit()
