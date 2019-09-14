@@ -31,7 +31,7 @@ class AppInitializationTests(unittest.TestCase):
         """ Sentry is only initialized when `RAVEN_DSN` is provided. """
 
         # Mock an environment with no variables at all, load extensions
-        with mock.patch.dict('os.environ', {}):
+        with mock.patch.dict('os.environ', clear=True):
             self.assertNotIn('RAVEN_DSN', os.environ)
             reload(extensions)  # Reload so extensions initialize from empty env vars
 

@@ -83,7 +83,7 @@ class TestWaiverView(WaiverTests):
         # Disable Sentry initialization to get around a frustrating deprecation warning
         # that is raised when using Raven with `contextmanager`
         # See: issue 1296 on raven-python
-        with mock.patch.dict('os.environ', {}):
+        with mock.patch.dict('os.environ', clear=True):
             reload(extensions)  # Sentry is configured on import!
             app = create_app()
         client = app.test_client()
