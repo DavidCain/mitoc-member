@@ -63,7 +63,7 @@ def add_membership():
 
 @blueprint.route("/members/waiver", methods=["POST"])
 def add_waiver():
-    """ Process a DocuSign waiver completion.
+    """Process a DocuSign waiver completion.
 
     NOTE: It's extremely important that there be some access control behind
     this route. It parses XML directly, so it must come from a trusted source

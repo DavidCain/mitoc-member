@@ -38,7 +38,7 @@ def commit():
 
 
 def add_person(first, last, email):
-    """ Create a new person in the gear database.
+    """Create a new person in the gear database.
 
     This is only to be done when we cannot find an existing membership
     under any known email addresses.
@@ -59,7 +59,7 @@ def add_person(first, last, email):
 
 
 def current_membership_expires(person_id):
-    """ Returns the date on which the current membership expires.
+    """Returns the date on which the current membership expires.
 
     If there's no current membership, `None` is returned.
     """
@@ -77,7 +77,7 @@ def current_membership_expires(person_id):
 
 
 def membership_start(person_id, datetime_paid):
-    """ Return the date on which a 12-month membership should start.
+    """Return the date on which a 12-month membership should start.
 
     This method enables participants to pay for a membership before their
     last one expires without losing the remaining days.
@@ -197,7 +197,7 @@ def add_waiver(person_id, datetime_signed):
 
 
 def already_added_waiver(person_id, date_signed):
-    """ Return if this person already has a waiver on this date.
+    """Return if this person already has a waiver on this date.
 
     We want to avoid processing the same waiver twice. Even if the participant
     signs the waiver twico in one day, it doesn't matter if we insert another
@@ -220,7 +220,7 @@ def already_added_waiver(person_id, date_signed):
 
 
 def already_inserted_membership(person_id, date_effective):
-    """ Return if a membership was already created for this day.
+    """Return if a membership was already created for this day.
 
     We don't use date_inserted since we could have manually added in a
     membership with a different date.
@@ -241,7 +241,7 @@ def already_inserted_membership(person_id, date_effective):
 
 
 def person_to_update(primary_email, all_emails):
-    """ Return the person which was most recently updated.
+    """Return the person which was most recently updated.
 
     In the future, we should employ automatic merging of accounts so
     that this logic isn't very necessary.

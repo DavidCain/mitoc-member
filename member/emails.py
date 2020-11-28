@@ -6,7 +6,7 @@ from member.trips_api import bearer_jwt
 
 
 def other_verified_emails(email_address):
-    """ Return other email addresses known to be owned by the same person.
+    """Return other email addresses known to be owned by the same person.
 
     We do a good job of maintaining one account per person on mitoc-trips.
     In the authentication model, individual users maintain a list of verified
@@ -34,7 +34,7 @@ def other_verified_emails(email_address):
 
 
 def update_membership(email_address, membership_expires=None, waiver_expires=None):
-    """ Inform mitoc-trips that a waiver or membership has been processed.
+    """Inform mitoc-trips that a waiver or membership has been processed.
 
     MITOC Trips maintains its own cache of when a participant's waiver and/or
     membership will expire. Because this data changes rarely, it's more

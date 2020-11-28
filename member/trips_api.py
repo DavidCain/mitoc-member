@@ -5,7 +5,7 @@ from flask import current_app
 
 
 def bearer_jwt(**kwargs):
-    """ Express a JWT for use on mitoc-trips.mit.edu as a bearer token.
+    """Express a JWT for use on mitoc-trips.mit.edu as a bearer token.
 
     The API there expects a token signed with a shared key - without this token,
     authorized routes will be denied access.

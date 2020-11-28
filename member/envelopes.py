@@ -59,7 +59,7 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
             raise ValueError("Expected {} as root element".format(tag))
 
     def _first_and_last(self):
-        """ A tuple that always contains the last name, and sometimes the last.
+        """A tuple that always contains the last name, and sometimes the last.
 
         If there's no spacing given in the name, we just assume that the user
         only reported their first name, and no last name.
@@ -81,7 +81,7 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
 
     @property
     def completed(self):
-        """ Return if all recipients have completed this envelope.
+        """Return if all recipients have completed this envelope.
 
         (It's possible for a user to have completed their part, but the waiver
         is still awaiting a guardian's signature).
@@ -97,7 +97,7 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
         return self._to_utc(time_signed)
 
     def _all_tab_statuses(self):
-        """ Yield the label and value for all tab statuses in the document.
+        """Yield the label and value for all tab statuses in the document.
 
         This method is complicated by the fact that:
         - a self-closing tab actually has None as its value for .text
@@ -111,7 +111,7 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
             yield label, (value and value.strip())
 
     def tab_status(self, desired_label):
-        """ Return the value for a specific tab status.
+        """Return the value for a specific tab status.
 
         ElementTree has rudimentary support for XPath, so we use a simple
         iterable instead.
