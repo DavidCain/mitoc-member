@@ -2,6 +2,10 @@
 include = '\.py$'
 # Don't attempt to normalize strings
 skip-string-normalization = true
+# Tell Black that this code is specifically meant for 3.6 instead of using per-file detection.
+# (without this, Black will only apply certain stylistic changes in the presence of 3.6+ syntax)
+# For example, f-strings prove that code requires 3.6 and Black will format differently.
+target_version = ["py36"]
 
 [tool.isort]
 line_length = 88
