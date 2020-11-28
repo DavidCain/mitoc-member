@@ -428,7 +428,7 @@ version = "0.5.2"
 code_coverage = ["coverage", "coveralls"]
 
 [metadata]
-content-hash = "0dc08ec19ec7327e21d4c932440ca154ab53e964138cf6d3d976f14ab72a6e6c"
+content-hash = "cdc78e9e0ea1b6573bd80584923a4fc023348c1e223b259af71d4a93f683f95e"
 python-versions = "^3.6"
 
 [metadata.hashes]

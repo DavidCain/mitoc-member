@@ -38,7 +38,7 @@ coveralls = { version = "*", optional = true }
 code_coverage = ["coverage", "coveralls"]
 
 [tool.poetry.dev-dependencies]
-black = { version = "*", allows-prereleases = true }
+black = { version = "*", allow-prereleases = true }
 isort = "*"
 pylint = "*"
 pytest = "*"
