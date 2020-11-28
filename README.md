@@ -27,13 +27,12 @@ https://mitoc.mit.edu/#join
 This project uses [`poetry`][poetry]. Make sure [`poetry` is installed!][poetry_installation]
 
 ```bash
-poetry install
-FLASK_APP=autoapp.py poetry run flask run
+make run
 ```
 
-## Running unit tests
+## Running unit tests & linters
 ```bash
-poetry run pytest
+make check
 ```
 
 

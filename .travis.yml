@@ -7,14 +7,10 @@ cache:
     - "$HOME/.cache/pypoetry"
 before_install: pip install poetry
 install:
-  - poetry install
-  - poetry install --extras=code_coverage
+  - make
 env:
   - FLASK_APP=autoapp.py
 script:
-  - black --check member tests
-  - isort -rc --check member tests
-  - pylint member tests
-  - coverage run -m pytest
+  - make check
 after_success:
   - coveralls
