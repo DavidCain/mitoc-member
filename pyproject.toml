@@ -11,6 +11,23 @@ target_version = ["py36"]
 known_first_party = "member"
 profile = "black"
 
+[tool.pylint.'MESSAGES CONTROL']
+disable = [
+  # Black handles all formatting
+  'format',
+  # I'm okay with TODO comments
+  'fixme',
+  # We use `db`, `ts`, etc. which don't adhere to the naming style
+  'invalid-name',
+  # Not all modules need a docstring
+  'missing-module-docstring',
+  # TODO:  Add docstrings to all classes & functions, then we can drop this.
+  'missing-docstring',
+]
+
+[tool.pylint.REPORTS]
+reports = false
+score = false
 [tool.poetry]
 name = "mitoc-member"
 version = "0.1.0"
