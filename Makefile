@@ -36,7 +36,7 @@ $(poetry_prod_bootstrap_file): poetry.lock
 .PHONY: fix
 fix: install-dev
 	poetry run black member
-	poetry run isort --recursive member
+	poetry run isort member
 
 .PHONY: check
 check: lint test
@@ -44,7 +44,7 @@ check: lint test
 .PHONY: lint
 lint: install-dev
 	poetry run black --fast --check member
-	poetry run isort --recursive --check member
+	poetry run isort --check member
 	poetry run pylint member
 
 .PHONY: test

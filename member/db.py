@@ -129,7 +129,8 @@ def add_membership(person_id, price_paid, datetime_paid, two_letter_affiliation_
     try:
         affiliation, expected_price = AFFILIATION_MAPPING[two_letter_affiliation_code]
     except KeyError:
-        raise InvalidAffiliation(f"{two_letter_affiliation_code} is not a recognized")
+        # pylint: disable=raise-missing-from
+        raise InvalidAffiliation(f"{two_letter_affiliation_code} is not recognized")
 
     # Because form data can be manipulated by users, it's perfectly possible to charge
     # yourself $1, and have a valid callback to this endpoint. Ensure that users
