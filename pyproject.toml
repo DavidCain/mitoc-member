@@ -8,10 +8,8 @@ skip-string-normalization = true
 target_version = ["py36"]
 
 [tool.isort]
-line_length = 88
 known_first_party = "member"
-multi_line_output = 3
-include_trailing_comma = true
+profile = "black"
 
 [tool.poetry]
 name = "mitoc-member"
