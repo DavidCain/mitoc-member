@@ -72,7 +72,7 @@ class WaiverTests(unittest.TestCase):
 # 2. Expand coverage in `test_envelope` to handle these various envelopes
 # 3. Support full end-to-end testing here
 class TestWaiverView(WaiverTests):
-    """ Test behavior of the waiver-processing view.
+    """Test behavior of the waiver-processing view.
 
     NOTE: Currently, this route directly hits database methods.
     In a future world, it will instead hit the geardb API.

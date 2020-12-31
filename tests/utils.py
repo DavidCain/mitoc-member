@@ -24,7 +24,7 @@ def create_app_with_env_vars(desired_env_vars):
 
 
 def reload_affected_modules():
-    """ Reload any modules that are affected by toying with env vars.
+    """Reload any modules that are affected by toying with env vars.
 
     This is useful for both:
     1. Re-loading to pull in *new* values after settings env vars

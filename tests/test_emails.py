@@ -11,7 +11,7 @@ from member.emails import other_verified_emails, update_membership
 
 
 class UrlopenHelpers(unittest.TestCase):
-    """ Provide some helpers to mocking `urlopen`.
+    """Provide some helpers to mocking `urlopen`.
 
     This service aims to be as small as possible, so we don't have `requests`.
     We just instead use the standard library!
@@ -29,7 +29,7 @@ class UrlopenHelpers(unittest.TestCase):
 
     @contextmanager
     def expect_request(self, expected_url, expected_payload, method='POST'):
-        """ Expect a single request to the URL, with payload & signed JWT.
+        """Expect a single request to the URL, with payload & signed JWT.
 
         Yields a mocked response that the caller can use to tweak as they see fit.
         """

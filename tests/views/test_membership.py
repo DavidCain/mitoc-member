@@ -64,7 +64,7 @@ class MembershipViewTests(unittest.TestCase):
         self.signer = SecureAcceptanceSigner('secret-key')
 
     def configure_normal_update(self):
-        """ Configure mocks to indicate a person already in the db.
+        """Configure mocks to indicate a person already in the db.
 
         In this situation, the membership update has not yet been processed.
         """
@@ -160,7 +160,7 @@ class TestMembershipView(MembershipViewTests):
     """ Test behavior of membership view _not_ relating to signatures. """
 
     def post_signed_data(self, data):
-        """ Generate a signature in the payload before posting.
+        """Generate a signature in the payload before posting.
 
         This utility method allows us to test logic without manually having
         to generate a valid signature.
@@ -171,7 +171,7 @@ class TestMembershipView(MembershipViewTests):
         payload = data.copy()
 
         # Sign the form
-        signed_field_names = [key for key in payload]
+        signed_field_names = list(payload)
         payload['signed_field_names'] = ','.join(signed_field_names)
         payload['signature'] = self.signer.sign(payload, signed_field_names)
 
@@ -198,7 +198,7 @@ class TestMembershipView(MembershipViewTests):
         self.assertEqual(response.status_code, 204)
 
     def test_non_acceptance_ignored(self):
-        """ If a transaction is anything but 'ACCEPT' it's ignored.
+        """If a transaction is anything but 'ACCEPT' it's ignored.
 
         (This corresponds to payments that were rejected, are in review, etc.)
         """
@@ -218,7 +218,7 @@ class TestMembershipView(MembershipViewTests):
 
     @mock.patch.object(views, 'other_verified_emails')
     def test_duplicate_requests_handled(self, verified_emails):
-        """ Test idempotency of the membership route.
+        """Test idempotency of the membership route.
 
         When the same membership transaction is POSTed to the API, we don't
         create or update anything.
@@ -331,7 +331,7 @@ class TestMembershipView(MembershipViewTests):
 
 
 class TestMembershipWithoutSignatureVerificationView(MembershipViewTests):
-    """ Test processing a membership _without_ verifying the signature.
+    """Test processing a membership _without_ verifying the signature.
 
     We support this behavior in the first place since MITOC does not actually
     have access to the secret key that could be used to verify signatures (with

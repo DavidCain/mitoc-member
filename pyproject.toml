@@ -28,6 +28,10 @@ disable = [
 [tool.pylint.REPORTS]
 reports = false
 score = false
+
+[tool.pylint.SIMILARITIES]
+ignore-imports=true
+
 [tool.poetry]
 name = "mitoc-member"
 version = "0.1.0"

@@ -35,17 +35,17 @@ $(poetry_prod_bootstrap_file): poetry.lock
 # (might fix a broken `make check`)
 .PHONY: fix
 fix: install-dev
-	poetry run black member
-	poetry run isort member
+	poetry run black member tests
+	poetry run isort member tests
 
 .PHONY: check
 check: lint test
 
 .PHONY: lint
 lint: install-dev
-	poetry run black --fast --check member
-	poetry run isort --check member
-	poetry run pylint member
+	poetry run black --fast --check member tests
+	poetry run isort --check member tests
+	poetry run pylint member tests
 
 .PHONY: test
 test: install-dev
