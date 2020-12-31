@@ -13,4 +13,4 @@ def bearer_jwt(**kwargs):
     secret = current_app.config['MEMBERSHIP_SECRET_KEY']
     expires = datetime.utcnow() + timedelta(minutes=15)
     token = jwt.encode({**kwargs, 'exp': expires}, secret, algorithm='HS512')
-    return 'Bearer: {}'.format(token.decode('UTF-8'))
+    return f'Bearer: {token}'
