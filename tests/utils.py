@@ -6,7 +6,7 @@ from member.app import create_app
 
 
 def create_app_with_env_vars(desired_env_vars):
-    """ Create an application with the given environment variables! """
+    """Create an application with the given environment variables!"""
     # NOTE: We avoid using the context manager pattern for patching
     # since `raven-python` will raise deprecation warnings! See raven-python #1296
     patch = mock.patch.dict('os.environ', desired_env_vars, clear=True)

@@ -47,7 +47,7 @@ def update_membership(email_address, membership_expires=None, waiver_expires=Non
     payload = {'email': email_address}
 
     def format_date(dt):
-        """ Format the date from a datetime OR date object in ISO-8601. """
+        """Format the date from a datetime OR date object in ISO-8601."""
         return datetime.strftime(dt, '%Y-%m-%d')  # isoformat() only works on date
 
     if membership_expires:

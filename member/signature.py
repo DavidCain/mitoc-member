@@ -26,7 +26,7 @@ class SecureAcceptanceSigner:
         return base64.b64encode(msg_hmac.digest())
 
     def verify_request(self, post_data):
-        """ Ensure the signature is valid so this request can be trusted. """
+        """Ensure the signature is valid so this request can be trusted."""
         signed_field_names = post_data.get('signed_field_names')
         if not signed_field_names:
             raise ValueError("Request has no fields to verify")

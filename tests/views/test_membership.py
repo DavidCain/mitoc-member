@@ -21,7 +21,7 @@ def one_year_later():
 
 
 def cybersource_now():
-    """ Return the current datetime formatted as CyberSource does. """
+    """Return the current datetime formatted as CyberSource does."""
     return datetime.strftime(datetime.now(), CYBERSOURCE_DT_FORMAT)
 
 
@@ -79,10 +79,10 @@ class MembershipViewTests(unittest.TestCase):
 
 
 class TestSignaturesInMembershipView(MembershipViewTests):
-    """ Test the signature-handling aspects of the membership view. """
+    """Test the signature-handling aspects of the membership view."""
 
     def test_no_signed_field_names(self):
-        """ When 'signed_field_names' is absent, a 401 is returned. """
+        """When 'signed_field_names' is absent, a 401 is returned."""
         payload = self.valid_payload.copy()
         payload.pop('signed_field_names')
 
@@ -91,7 +91,7 @@ class TestSignaturesInMembershipView(MembershipViewTests):
 
     @mock.patch.object(views, 'other_verified_emails')
     def test_valid_signature(self, verified_emails):
-        """ When a valid signature is included, the route succeeds. """
+        """When a valid signature is included, the route succeeds."""
         all_emails = ['mitoc-member@example.com']
         verified_emails.return_value = ('mitoc-member@example.com', all_emails)
 
@@ -101,7 +101,7 @@ class TestSignaturesInMembershipView(MembershipViewTests):
         self.assertEqual(response.status_code, 201)
 
     def test_invalid_signature(self):
-        """ We 401 when signed names are present, but signature is invalid. """
+        """We 401 when signed names are present, but signature is invalid."""
         payload = self.valid_payload.copy()
         payload['signature'] = 'this-signature-is-invalid'
         response = self.client.post('/members/membership', data=payload)
@@ -123,7 +123,7 @@ class ApiDownTests(MembershipViewTests):
 
     @mock.patch.object(views, 'other_verified_emails')
     def test_mitoc_trips_api_down(self, verified_emails):
-        """ If the MITOC Trips API is down, the route still succeeds. """
+        """If the MITOC Trips API is down, the route still succeeds."""
         email = ['mitoc-member@example.com']
         verified_emails.return_value = (email, [email])
 
@@ -140,7 +140,7 @@ class ApiDownTests(MembershipViewTests):
 
     @mock.patch.object(views, 'other_verified_emails')
     def test_mitoc_trips_api_down_but_no_sentry(self, verified_emails):
-        """ If Sentry is not configured, the route still succeeds. """
+        """If Sentry is not configured, the route still succeeds."""
         email = ['mitoc-member@example.com']
         verified_emails.return_value = (email, [email])
 
@@ -157,7 +157,7 @@ class ApiDownTests(MembershipViewTests):
 
 
 class TestMembershipView(MembershipViewTests):
-    """ Test behavior of membership view _not_ relating to signatures. """
+    """Test behavior of membership view _not_ relating to signatures."""
 
     def post_signed_data(self, data):
         """Generate a signature in the payload before posting.
@@ -178,14 +178,14 @@ class TestMembershipView(MembershipViewTests):
         return self.client.post('/members/membership', data=payload)
 
     def expect_no_processing(self):
-        """ No attempts are made to modify the database. """
+        """No attempts are made to modify the database."""
         # No further action is taken
         self.db.add_person.assert_not_called()
         self.db.add_membership.assert_not_called()
         self.update_membership.assert_not_called()
 
     def test_non_membership_transactions_ignored(self):
-        """ Any CyberSource transaction not for membership is ignored. """
+        """Any CyberSource transaction not for membership is ignored."""
         response = self.post_signed_data(
             {
                 'decision': 'ACCEPT',
@@ -250,7 +250,7 @@ class TestMembershipView(MembershipViewTests):
 
     @mock.patch.object(views, 'other_verified_emails')
     def test_update_membership(self, verified_emails):
-        """ Updating an existing membership works. """
+        """Updating an existing membership works."""
         # The Trips web site gives all emails that we use to look up the user
         all_emails = ('mitoc-member@example.com', 'same-person@example.com')
         verified_emails.return_value = ('mitoc-member@example.com', all_emails)
@@ -288,7 +288,7 @@ class TestMembershipView(MembershipViewTests):
 
     @mock.patch.object(views, 'other_verified_emails')
     def test_new_membership(self, verified_emails):
-        """ We create a new person record when somebody is new to MITOC. """
+        """We create a new person record when somebody is new to MITOC."""
         # The Trips web site gives all emails that we use to look up the user
         all_emails = ('mitoc-member@example.com', 'same-person@example.com')
         verified_emails.return_value = ('mitoc-member@example.com', all_emails)
@@ -347,7 +347,7 @@ class TestMembershipWithoutSignatureVerificationView(MembershipViewTests):
         self.app.config['VERIFY_CYBERSOURCE_SIGNATURE'] = False
 
     def test_bad_signature_still_works(self):
-        """ A valid payload with a bad signature still works. """
+        """A valid payload with a bad signature still works."""
         payload = {
             'decision': 'ACCEPT',
             'req_merchant_defined_data1': 'membership',

@@ -14,7 +14,7 @@ blueprint = Blueprint('public', __name__)
 
 @blueprint.route("/members/membership", methods=["POST"])
 def add_membership():
-    """ Process a CyberSource transaction & create/update membership. """
+    """Process a CyberSource transaction & create/update membership."""
     data = request.form
     if data['decision'] != 'ACCEPT':
         return json.jsonify(), 204  # Transaction canceled, declined, etc.

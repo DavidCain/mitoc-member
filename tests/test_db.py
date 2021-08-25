@@ -8,7 +8,7 @@ from member import db, errors
 class TestDbMethods(unittest.TestCase):
     @unittest.mock.patch.object(db, 'current_membership_expires')
     def test_new_member_expiration(self, current_membership_expires):
-        """ New memberships start on the date of payment in Boston. """
+        """New memberships start on the date of payment in Boston."""
         current_membership_expires.return_value = None
         test_cases = [
             # Normal case: It's the same day in both EST and UTC
@@ -26,7 +26,7 @@ class TestDbMethods(unittest.TestCase):
 
     @unittest.mock.patch.object(db, 'current_membership_expires')
     def test_renewed_near_end(self, current_membership_expires):
-        """ Renewing at the end of a membership adds 12 full months. """
+        """Renewing at the end of a membership adds 12 full months."""
         # It's early January, and our membership expires in two weeks
         datetime_paid = datetime(2018, 1, 1, 12, 47)
         membership_expires_on = date(2018, 1, 15)
@@ -37,7 +37,7 @@ class TestDbMethods(unittest.TestCase):
 
     @unittest.mock.patch.object(db, 'current_membership_expires')
     def test_renewed_very_early(self, current_membership_expires):
-        """ Renewing too early adds 12 months from the date renewed. """
+        """Renewing too early adds 12 months from the date renewed."""
         # In January, we're renewing a membership that expires in June
         datetime_paid = datetime(2018, 1, 1, 12, 47)
         date_paid_EST = date(2018, 1, 1)
@@ -49,7 +49,7 @@ class TestDbMethods(unittest.TestCase):
 
     @unittest.mock.patch.object(db, 'get_db')
     def test_unknown_affiliation_given(self, get_db):
-        """ Make sure that the affiliation we see is valid. """
+        """Make sure that the affiliation we see is valid."""
         cursor = unittest.mock.Mock()
         get_db.cursor.return_value = cursor
         with self.assertRaises(errors.InvalidAffiliation):
@@ -58,7 +58,7 @@ class TestDbMethods(unittest.TestCase):
 
     @unittest.mock.patch.object(db, 'get_db')
     def test_insufficient_payment_given(self, get_db):
-        """ Ensure that the payment received was the amount expected. """
+        """Ensure that the payment received was the amount expected."""
         cursor = unittest.mock.Mock()
         get_db.cursor.return_value = cursor
         with self.assertRaises(errors.IncorrectPayment):
@@ -67,7 +67,7 @@ class TestDbMethods(unittest.TestCase):
 
     @unittest.mock.patch.object(db, 'get_db')
     def test_old_payment_values(self, get_db):
-        """ Ensure that the old annual dues are not processed. """
+        """Ensure that the old annual dues are not processed."""
         cursor = unittest.mock.Mock()
         get_db.cursor.return_value = cursor
         old_now_invalid = {
@@ -83,6 +83,6 @@ class TestDbMethods(unittest.TestCase):
         cursor.execute.assert_not_called()
 
     def test_updating_with_invalid_affiliation(self):
-        """ We only attempt to update people with valid affiliations. """
+        """We only attempt to update people with valid affiliations."""
         with self.assertRaises(ValueError):
             db.update_affiliation(42, "Cousin of MIT alumni's brother")

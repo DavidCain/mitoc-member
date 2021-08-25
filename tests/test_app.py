@@ -12,7 +12,7 @@ DUMMY_RAVEN_DSN = 'https://aa11bb22cc33dd44ee55ff6601234560@sentry.io/104648'
 
 class AppInitializationTests(unittest.TestCase):
     def test_sentry_conditionally_loaded(self):
-        """ Sentry is only initialized when `RAVEN_DSN` is provided. """
+        """Sentry is only initialized when `RAVEN_DSN` is provided."""
         with mock.patch.dict('os.environ', {'RAVEN_DSN': DUMMY_RAVEN_DSN}):
             # Reload the extensions module so that extensions.sentry is redefined!
             reload(extensions)
@@ -28,7 +28,7 @@ class AppInitializationTests(unittest.TestCase):
         init_app.assert_called_once_with(created_app)
 
     def test_sentry_not_loaded(self):
-        """ Sentry is only initialized when `RAVEN_DSN` is provided. """
+        """Sentry is only initialized when `RAVEN_DSN` is provided."""
 
         # Mock an environment with no variables at all, load extensions
         with mock.patch.dict('os.environ', clear=True):

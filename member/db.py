@@ -18,7 +18,7 @@ EST = pytz.timezone('US/Eastern')  # GMT-4 or GMT-5, depending on DST
 
 
 def get_db():
-    """ Opens a new connection if not already in current app context. """
+    """Opens a new connection if not already in current app context."""
     top = _app_ctx_stack.top
     if not hasattr(top, 'conn'):
         top.conn = mysql.connect()
@@ -33,7 +33,7 @@ def close_db(_exception):
 
 
 def commit():
-    """ Commit the current transaction. """
+    """Commit the current transaction."""
     get_db().commit()
 
 
@@ -104,7 +104,7 @@ def membership_start(person_id, datetime_paid):
 
 
 def update_affiliation(person_id, affiliation):
-    """ Update the current affiliation known for the person. """
+    """Update the current affiliation known for the person."""
     if affiliation not in {aff.VALUE for aff in affiliations.ALL}:
         raise ValueError(f"Unknown affiliation! {affiliation}")
 
@@ -123,7 +123,7 @@ def update_affiliation(person_id, affiliation):
 
 
 def add_membership(person_id, price_paid, datetime_paid, two_letter_affiliation_code):
-    """ Add a membership payment for an existing MITOC member. """
+    """Add a membership payment for an existing MITOC member."""
     db = get_db()
     cursor = db.cursor()
     try:

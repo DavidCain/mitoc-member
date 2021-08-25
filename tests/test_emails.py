@@ -46,7 +46,7 @@ class UrlopenHelpers(unittest.TestCase):
         self.urlopen.assert_called_once()
 
     def _inspect(self, expected_url, expected_payload, method, response=None):
-        """ Ensure that the request to `mitoc-trips` is properly formed. """
+        """Ensure that the request to `mitoc-trips` is properly formed."""
 
         @contextmanager
         def inspect(request):
@@ -71,7 +71,7 @@ class UrlopenHelpers(unittest.TestCase):
 
 class UpdateMembershipTests(UrlopenHelpers, unittest.TestCase):
     def test_update_membership(self):
-        """ When updating just a membership, we send that via JWT. """
+        """When updating just a membership, we send that via JWT."""
         expires = datetime(2018, 9, 24).date()
         with self.expect_request(
             'https://mitoc-trips.mit.edu/data/membership/',
@@ -82,7 +82,7 @@ class UpdateMembershipTests(UrlopenHelpers, unittest.TestCase):
         self.assertEqual(ret, {})
 
     def test_update_waiver(self):
-        """ When updating just a waiver, we send that via JWT. """
+        """When updating just a waiver, we send that via JWT."""
         expires = datetime(2017, 2, 28).date()
         with self.expect_request(
             'https://mitoc-trips.mit.edu/data/membership/',

@@ -10,7 +10,7 @@ from mitoc_const import affiliations
 
 
 class DocuSignDocumentHelpers:
-    """ Generic helpers for use in parsing any DocuSign XML document. """
+    """Generic helpers for use in parsing any DocuSign XML document."""
 
     ns = {'docu': "http://www.docusign.net/API/3.0"}
     recipient_status = ['EnvelopeStatus', 'RecipientStatuses', 'RecipientStatus']
@@ -19,7 +19,7 @@ class DocuSignDocumentHelpers:
         self.root = ET.fromstring(xml_contents)
 
     def get_element(self, hierarchy, findall=False):
-        """ Return a single element from an array of XPath selectors. """
+        """Return a single element from an array of XPath selectors."""
         # (This method exists to ease the pain of namespaces with ElementTree)
         xpath = '/'.join('docu:{}'.format(tag) for tag in hierarchy)
         if findall:
@@ -27,14 +27,14 @@ class DocuSignDocumentHelpers:
         return self.root.find(xpath, self.ns)
 
     def get_val(self, hierarchy):
-        """ Return the value in a single element. """
+        """Return the value in a single element."""
         return self.get_element(hierarchy).text.strip()
 
     def _get_hours_offset(self):
         return self.get_val(['TimeZoneOffset'])
 
     def _to_utc(self, datetime_string):
-        """ Convert datetimes from the document to UTC based on the supplied TZ. """
+        """Convert datetimes from the document to UTC based on the supplied TZ."""
         hours_offset = int(self._get_hours_offset())
         # DocuSign seems to perhaps be transitioning over datetime formats?
         # It sometimes gives datetimes with microseconds, sometimes without...
@@ -49,10 +49,10 @@ class DocuSignDocumentHelpers:
 
 
 class CompletedEnvelope(DocuSignDocumentHelpers):
-    """ Navigate a DocuSignEnvelopeInformation resource (completed waiver). """
+    """Navigate a DocuSignEnvelopeInformation resource (completed waiver)."""
 
     def __init__(self, xml_contents):
-        """ Error out early if it's the unexpected document type. """
+        """Error out early if it's the unexpected document type."""
         super().__init__(xml_contents)
         tag = '{%s}DocuSignEnvelopeInformation' % self.ns['docu']
         if self.root.tag != tag:
@@ -68,12 +68,12 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
 
     @property
     def first_name(self):
-        """ First name of the MITOC member this waiver is for. """
+        """First name of the MITOC member this waiver is for."""
         return self._first_and_last()[0]
 
     @property
     def last_name(self):
-        """ Last name of the MITOC member this waiver is for. """
+        """Last name of the MITOC member this waiver is for."""
         try:
             return self._first_and_last()[1]
         except IndexError:  # No space given, we don't know the last name
@@ -90,7 +90,7 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
 
     @property
     def time_signed(self):
-        """ Return the timestamp when the document was signed. """
+        """Return the timestamp when the document was signed."""
         if not self.completed:
             raise ValueError("Incompleted documents are not signed!")
         time_signed = self.get_val(['EnvelopeStatus', 'Completed'])
@@ -123,17 +123,17 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
 
     @property
     def releasor_email(self):
-        """ The email of the person who signed the release. """
+        """The email of the person who signed the release."""
         return self.tab_status("Releasor's Email")
 
     @property
     def releasor_name(self):
-        """ The name of the person who signed the release. """
+        """The name of the person who signed the release."""
         return self.tab_status("Releasor's Name")
 
     @property
     def affiliation(self):
-        """ The member's stated affiliation to MIT. """
+        """The member's stated affiliation to MIT."""
         selector = self.recipient_status + [
             'FormData',
             'xfdf',

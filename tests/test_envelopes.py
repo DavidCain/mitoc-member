@@ -24,26 +24,26 @@ class TestNameSplitting(unittest.TestCase):
             yield load_envelope()
 
     def test_mononyms(self):
-        """ If a user omits a last name, assume it's just a first name. """
+        """If a user omits a last name, assume it's just a first name."""
         with self.username('Cher') as env:
             self.assertEqual(env.first_name, 'Cher')
             self.assertEqual(env.last_name, '')
 
     def test_multiple_last_names(self):
-        """ Multiple names after initial space are treated as last name. """
+        """Multiple names after initial space are treated as last name."""
         with self.username('Gabriel José de la Concordia García Márquez') as env:
             long_surname = 'José de la Concordia García Márquez'
             self.assertEqual(env.first_name, 'Gabriel')
             self.assertEqual(env.last_name, long_surname)
 
     def test_firstname_lastname(self):
-        """ Simplest case: first & last name, separated by a space. """
+        """Simplest case: first & last name, separated by a space."""
         with self.username('John Smith') as env:
             self.assertEqual(env.first_name, 'John')
             self.assertEqual(env.last_name, 'Smith')
 
     def test_extra_spaces(self):
-        """ Superfluous spacing between names doesn't matter. """
+        """Superfluous spacing between names doesn't matter."""
         with self.username('Timothy   Toomanyspaces') as env:
             self.assertEqual(env.first_name, 'Timothy')
             self.assertEqual(env.last_name, 'Toomanyspaces')
@@ -51,7 +51,7 @@ class TestNameSplitting(unittest.TestCase):
 
 class TestExpectedDocumentType(unittest.TestCase):
     def test_root_element_okay(self):  # pylint: disable=no-self-use
-        """ No errors occur when initializing the right root element type. """
+        """No errors occur when initializing the right root element type."""
         valid_xml = '''<?xml version="1.0" encoding="utf-8" ?>
             <DocuSignEnvelopeInformation xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -62,7 +62,7 @@ class TestExpectedDocumentType(unittest.TestCase):
         envelopes.CompletedEnvelope(valid_xml)
 
     def test_early_failure(self):
-        """ Fail early when passed the wrong XML. """
+        """Fail early when passed the wrong XML."""
         bad_xml = '''<?xml version="1.0" encoding="utf-8" ?>
             <WrongRootElement>
             <UserName>Bob</UserName>
@@ -95,14 +95,14 @@ class TestWaiverParser(unittest.TestCase):
                 incomplete_env.time_signed  # pylint:disable=pointless-statement
 
     def test_time_signed(self):
-        """ The time signed is parsed & converted to UTC. """
+        """The time signed is parsed & converted to UTC."""
         utc_time_signed = datetime(2018, 11, 10, 23, 41, 6, 937000, tzinfo=timezone.utc)
 
         self.assertEqual(self.env.time_signed, utc_time_signed)
 
     @mock.patch('member.envelopes.CompletedEnvelope._get_hours_offset')
     def test_offset(self, hours_offset):
-        """ The offset is applied in hours from UTC. """
+        """The offset is applied in hours from UTC."""
         time_signed = datetime(2018, 11, 10, 18, 41, 6, 937000)
 
         hours_offset.return_value = '0'
@@ -121,5 +121,5 @@ class TestWaiverParser(unittest.TestCase):
         )
 
     def test_releasor_email(self):
-        """ The releasor's email is parsed out. """
+        """The releasor's email is parsed out."""
         self.assertEqual(self.env.releasor_email, 'tim@mit.edu')

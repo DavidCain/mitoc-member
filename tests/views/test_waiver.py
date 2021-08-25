@@ -39,7 +39,7 @@ class WaiverTests(unittest.TestCase):
 
     @contextmanager
     def _first_waiver(self, primary_email, all_emails):
-        """ Mock all the database calls to simulate a first-time waiver signing. """
+        """Mock all the database calls to simulate a first-time waiver signing."""
         # No need to mock an envelope, since we submit valid envelopes!
         with mock.patch.object(views, 'other_verified_emails') as verified_emails:
             verified_emails.return_value = (primary_email, all_emails)
@@ -53,11 +53,11 @@ class WaiverTests(unittest.TestCase):
     @staticmethod
     @contextmanager
     def _mocked_env():
-        """ Mock an envelope, so we might simulate its various public methods. """
+        """Mock an envelope, so we might simulate its various public methods."""
         mocked_envelope = mock.Mock(spec=CompletedEnvelope)
 
         def verify_but_return_mock(data):
-            """ Ensure that the data is a valid envelope, but ignore it & return a mock. """
+            """Ensure that the data is a valid envelope, but ignore it & return a mock."""
             # This will raise an exception if the data is not a valid envelope!
             CompletedEnvelope(data)  # Will r
             return mocked_envelope
@@ -79,7 +79,7 @@ class TestWaiverView(WaiverTests):
     """
 
     def test_post_not_yet_completed(self):
-        """ Waivers awaiting a guardian's signature should not be processed. """
+        """Waivers awaiting a guardian's signature should not be processed."""
         # Disable Sentry initialization to get around a frustrating deprecation warning
         # that is raised when using Raven with `contextmanager`
         # See: issue 1296 on raven-python
@@ -96,7 +96,7 @@ class TestWaiverView(WaiverTests):
 
     @mock.patch.object(views, 'update_membership')
     def test_completed_waiver_not_in_db(self, update_membership):
-        """ Test behavior on a completed waiver for somebody not in our db! """
+        """Test behavior on a completed waiver for somebody not in our db!"""
 
         all_emails = ['tim@mit.edu', 'tim@csail.mit.edu']
         with self._first_waiver('tim@mit.edu', all_emails) as (db, verified_emails):
@@ -125,7 +125,7 @@ class TestWaiverView(WaiverTests):
         self.assertEqual(resp.status_code, 201)
 
     def test_already_added_waiver(self):
-        """ If the waiver is already present in the database, we don't re-submit. """
+        """If the waiver is already present in the database, we don't re-submit."""
         # No need to mock an envelope, since we submit valid envelopes!
         with mock.patch.object(views, 'other_verified_emails') as verified_emails:
             verified_emails.return_value = ('tim@mit.edu', ['tim@mit.edu'])
@@ -149,7 +149,7 @@ class ApiDownTests(WaiverTests):
 
     @mock.patch.object(views, 'update_membership')
     def test_mitoc_trips_api_down(self, update_membership):
-        """ If the MITOC Trips API is down, the route still succeeds. """
+        """If the MITOC Trips API is down, the route still succeeds."""
         update_membership.side_effect = URLError("API is down!")
 
         all_emails = ['tim@mit.edu']
@@ -170,7 +170,7 @@ class ApiDownTests(WaiverTests):
 
     @mock.patch.object(views, 'update_membership')
     def test_mitoc_trips_api_down_but_no_sentry(self, update_membership):
-        """ If Sentry is not configured, the route still succeeds. """
+        """If Sentry is not configured, the route still succeeds."""
         update_membership.side_effect = URLError("API is down!")
 
         all_emails = ['tim@mit.edu']
