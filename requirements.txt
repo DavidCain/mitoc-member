@@ -4,15 +4,15 @@
 # poetry is the authoritative source of dependencies (see `pyproject.toml` and `poetry.lock`)
 #
 blinker==1.4
-Click==7.0
-Flask==1.1.1
-Flask-MySQL==1.4.0
+Click==7.1.2
+Flask-MySQL==1.5.2
+Flask==1.1.4
 itsdangerous==1.1.0
-Jinja2==2.10.1
-MarkupSafe==1.1.1
+Jinja2==2.11.3
+MarkupSafe==2.0.1
 mitoc-const==0.4.1
-PyJWT==1.7.1
-PyMySQL==0.9.3
-pytz==2019.2
+PyJWT==2.1.0
+PyMySQL==1.0.2
+pytz==2021.1
 raven==6.10.0
-Werkzeug==0.15.5
+Werkzeug==1.0.1
