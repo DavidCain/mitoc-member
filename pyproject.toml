@@ -2,10 +2,9 @@
 include = '\.py$'
 # Don't attempt to normalize strings
 skip-string-normalization = true
-# Tell Black that this code is specifically meant for 3.6 instead of using per-file detection.
-# (without this, Black will only apply certain stylistic changes in the presence of 3.6+ syntax)
-# For example, f-strings prove that code requires 3.6 and Black will format differently.
-target_version = ["py36"]
+# Tell Black that this code is specifically meant for 3.8 instead of using per-file detection.
+# (without this, Black will only apply certain stylistic changes in the presence of version-specific syntax)
+target_version = ["py38"]
 
 [tool.isort]
 known_first_party = "member"
@@ -43,7 +42,7 @@ repository = "https://github.com/DavidCain/mitoc-member/"
 authors = ["David Cain <davidjosephcain@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.8.10"
 Flask = "^1.0"
 flask-mysql = "^1.0"
 PyJWT = "*"
