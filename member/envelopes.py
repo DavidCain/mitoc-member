@@ -5,6 +5,7 @@ this utility module parses out the MITOC member's information.
 """
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from typing import Tuple, Union
 
 from mitoc_const import affiliations
 
@@ -15,25 +16,25 @@ class DocuSignDocumentHelpers:
     ns = {'docu': "http://www.docusign.net/API/3.0"}
     recipient_status = ['EnvelopeStatus', 'RecipientStatuses', 'RecipientStatus']
 
-    def __init__(self, xml_contents):
+    def __init__(self, xml_contents: str):
         self.root = ET.fromstring(xml_contents)
 
-    def get_element(self, hierarchy, findall=False):
+    def get_element(self, hierarchy, findall: bool = False):
         """Return a single element from an array of XPath selectors."""
         # (This method exists to ease the pain of namespaces with ElementTree)
-        xpath = '/'.join('docu:{}'.format(tag) for tag in hierarchy)
+        xpath = '/'.join(f'docu:{tag}' for tag in hierarchy)
         if findall:
             return self.root.findall(xpath, self.ns)
         return self.root.find(xpath, self.ns)
 
-    def get_val(self, hierarchy):
+    def get_val(self, hierarchy) -> str:
         """Return the value in a single element."""
         return self.get_element(hierarchy).text.strip()
 
-    def _get_hours_offset(self):
+    def _get_hours_offset(self) -> str:
         return self.get_val(['TimeZoneOffset'])
 
-    def _to_utc(self, datetime_string):
+    def _to_utc(self, datetime_string) -> datetime:
         """Convert datetimes from the document to UTC based on the supplied TZ."""
         hours_offset = int(self._get_hours_offset())
         # DocuSign seems to perhaps be transitioning over datetime formats?
@@ -56,9 +57,9 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
         super().__init__(xml_contents)
         tag = '{%s}DocuSignEnvelopeInformation' % self.ns['docu']
         if self.root.tag != tag:
-            raise ValueError("Expected {} as root element".format(tag))
+            raise ValueError(f"Expected {tag} as root element")
 
-    def _first_and_last(self):
+    def _first_and_last(self) -> Union[Tuple[str], Tuple[str, str]]:
         """A tuple that always contains the last name, and sometimes the last.
 
         If there's no spacing given in the name, we just assume that the user
@@ -67,12 +68,12 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
         return self.releasor_name.split(None, 1)
 
     @property
-    def first_name(self):
+    def first_name(self) -> str:
         """First name of the MITOC member this waiver is for."""
         return self._first_and_last()[0]
 
     @property
-    def last_name(self):
+    def last_name(self) -> str:
         """Last name of the MITOC member this waiver is for."""
         try:
             return self._first_and_last()[1]
@@ -80,7 +81,7 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
             return ''
 
     @property
-    def completed(self):
+    def completed(self) -> bool:
         """Return if all recipients have completed this envelope.
 
         (It's possible for a user to have completed their part, but the waiver
@@ -89,7 +90,7 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
         return self.get_val(['EnvelopeStatus', 'Status']) == 'Completed'
 
     @property
-    def time_signed(self):
+    def time_signed(self) -> datetime:
         """Return the timestamp when the document was signed."""
         if not self.completed:
             raise ValueError("Incompleted documents are not signed!")
@@ -101,7 +102,7 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
 
         This method is complicated by the fact that:
         - a self-closing tab actually has None as its value for .text
-        - ET elements are somehow _falsy_ - we must explicitly compare to None
+        - ET elements are somehow *falsy* - we must explicitly compare to None
         """
         selector = self.recipient_status + ['TabStatuses', 'TabStatus']
         for tab in self.get_element(selector, findall=True):
@@ -119,20 +120,20 @@ class CompletedEnvelope(DocuSignDocumentHelpers):
         for label, value in self._all_tab_statuses():
             if label == desired_label:
                 return value
-        raise ValueError("Missing {}!".format(desired_label))
+        raise ValueError(f"Missing {desired_label}!")
 
     @property
-    def releasor_email(self):
+    def releasor_email(self) -> str:
         """The email of the person who signed the release."""
         return self.tab_status("Releasor's Email")
 
     @property
-    def releasor_name(self):
+    def releasor_name(self) -> str:
         """The name of the person who signed the release."""
         return self.tab_status("Releasor's Name")
 
     @property
-    def affiliation(self):
+    def affiliation(self) -> str:
         """The member's stated affiliation to MIT."""
         selector = self.recipient_status + [
             'FormData',

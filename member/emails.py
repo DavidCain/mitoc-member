@@ -1,11 +1,18 @@
 import json
 from datetime import datetime
+from typing import List, NamedTuple
 from urllib.request import Request, urlopen
 
 from member.trips_api import bearer_jwt
 
 
-def other_verified_emails(email_address):
+class VerifiedEmails(NamedTuple):
+    primary: str
+    # Is expected to contain the primary email.
+    all_emails: List[str]
+
+
+def other_verified_emails(email_address: str) -> VerifiedEmails:
     """Return other email addresses known to be owned by the same person.
 
     We do a good job of maintaining one account per person on mitoc-trips.
@@ -30,7 +37,7 @@ def other_verified_emails(email_address):
     with urlopen(request) as response:
         data = json.loads(response.read())
 
-    return (data['primary'], data['emails'])
+    return VerifiedEmails(data['primary'], data['emails'])
 
 
 def update_membership(email_address, membership_expires=None, waiver_expires=None):
